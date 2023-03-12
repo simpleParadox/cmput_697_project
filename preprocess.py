@@ -9,13 +9,15 @@ from gensim.models import KeyedVectors
 from transformers import AutoTokenizer, AutoModel, BertModel, BertTokenizer
 import torch
 
+
+
 def load_data():
     """
     Load the passages from the csv file.
     :return: Reviews text and reviews ratings as lists. No filtering based on the product or the language is carried out here.
     NOTE: The title of the review is the prepended to the review text.
     """
-    df = pd.read_csv("/Users/simpleparadox/PycharmProjects/cmput_697/data/review_data.csv")
+    df = pd.read_csv("data/review_data.csv")
 
     # Extract the reviews.
     reviews = df["reviews.text"].tolist()

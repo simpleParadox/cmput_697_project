@@ -33,6 +33,7 @@ class Clustering:
             self.alg1 = KMeans(n_clusters=n_clusters, random_state=42)
             self.alg2 = AgglomerativeClustering(n_clusters=n_clusters)
         else:
+            # The metric is used only for the density based clustering algorithm.
             self.alg1 = DBSCAN(eps=eps, min_samples=min_samples, metric=metric)
             self.alg2 = OPTICS(eps=eps, min_samples=min_samples, metric=metric)
 
@@ -56,7 +57,7 @@ class Clustering:
             alg2_score = silhouette_score(X, self.alg2.labels_)
             return alg1_score, alg2_score
         elif method == "external":
-            assert y != None, "y should not be None for external validation."
+            # assert y != None, "y should not be None for external validation."
             alg1_score = adjusted_rand_score(y, self.alg1.labels_)
             alg2_score = adjusted_rand_score(y, self.alg2.labels_)
             return alg1_score, alg2_score

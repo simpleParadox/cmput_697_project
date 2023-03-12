@@ -1,7 +1,35 @@
 # Custom python files.
 from preprocess import load_data, store_embeddings
 from models import Clustering
+
+# General python data science packages.
 import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Data reduction tools and other metrics.
+from sklearn.manifold import TSNE
+from sklearn.metrics import confusion_matrix
+from sklearn.preprocessing import StandardScaler
+
+
+def plot_clusters(embedding_data, true_labels, cluster_labels):
+    tsne = TSNE(n_components=2)
+    tsne_result = tsne.fit_transform(embedding_data)  # This is after dimensionality reduction.
+
+    # Get the components.
+    x = tsne_result[:, 0]
+    y = tsne_result[:, 1]
+
+    # Create a dataframe for easy plotting using seaborn.
+    df = pd.DataFrame({'x': x, 'y': y, 'true_label': true_labels, 'cluster_label': cluster_labels})
+
+    # Plot using seaborn.
+    plt.figure(figsize=(8, 8))
+    ax = sns.scatterplot(x='x', y='y', hue='cluster_label', data=df, pallete=sns.color_palette("hls", 10), legend="full")
+    # ax  = sns.scatterplot()  # Fill this out to plot the centroids.
+    plt.show()
 
 
 
@@ -14,12 +42,17 @@ reviews, ratings = load_data()
 # Get the indices where the ratings are not nan.
 good_indices = np.where(np.isnan(ratings) == False)[0]
 ratings = np.array(ratings)[good_indices]
+ratings -= 1 # To be in line with the labels assigned by the clustering algorithm.
+
+# The following three lines are when the number of clusters is 3.
+
+
 # Get the embeddings.
 # embeddings = store_embeddings(reviews, model_name="bert", store_path="/Users/simpleparadox/PycharmProjects/cmput_697/embeds/bert_avg.npz")
 
 
 iterations = 50
-possible_clusters = [3, 5]
+possible_clusters = [3]
 k_means_internal = np.zeros((iterations, len(possible_clusters)))
 agglomerative_internal = np.zeros((iterations, len(possible_clusters)))
 k_means_external = np.zeros((iterations, len(possible_clusters)))
@@ -32,19 +65,31 @@ optics_internal = np.zeros((iterations, len(possible_eps)))
 optics_external = np.zeros((iterations, len(possible_eps)))
 
 
+if possible_clusters[0] == 3:
+    # Relabel the ratings if the number of selected clusters is 3, else leave them unchanged.
+    ratings[ratings < 3] = 0
+    ratings[ratings == 3] = 1
+    ratings[ratings > 3] = 2
+
 
 for i in range(iterations):
     clustering_class = 'partitioning'
     # Load the embeddings.
     embed_names = ["bert_avg", "bert_embeddings", "w2v_embeddings"]
     for embed in embed_names:
-        embedding = np.load(f"/Users/simpleparadox/PycharmProjects/cmput_697/embeds/{embed}.npz")['arr_0']
+        embedding = np.load(f"embeds/{embed}.npz")['arr_0']
         embedding = embedding[good_indices]
+
+        # Apply standard scalar on the embeddings.
+        scaler = StandardScaler()
+        embedding = scaler.fit_transform(embedding)
+
         # Run the clustering algorithms on the selected embeddings.
         if clustering_class == 'partitioning':
             for c_i, n_cluster in enumerate(possible_clusters):
                 print(f"Number of clusters: {n_cluster}")
-                clustering = Clustering(n_clusters=n_cluster, eps=None, min_samples=5, metric="euclidean")
+
+                clustering = Clustering(n_clusters=n_cluster, eps=None, min_samples=5, metric="cosine")
                 clustering.train(embedding)
 
                 # Do internal validation.
@@ -58,7 +103,8 @@ for i in range(iterations):
 
                 # Do external validation.
                 print("External validation for ", embed)
-                kmeans_score, agglomerative_score = clustering.validate(reviews, ratings, method='external')
+                # The check that we have to make here is if the predicted and the true labels are the same.
+                kmeans_score, agglomerative_score = clustering.validate(embedding, ratings, method='external')  # NOTE: 'embeddings' is not used here.
                 print("Kmeans adjusted_rand_index: ", kmeans_score)
                 k_means_external[i, c_i] = kmeans_score
                 print("Hierarchical adjusted_rand_index: ", agglomerative_score)
@@ -71,7 +117,7 @@ for i in range(iterations):
 
                 # Do internal validation.
                 print("Internal validation for ", embed)
-                dbscan_score, optics_score = clustering.validate(reviews, None, method='internal')  # NOTE: y (ratings) is not used for internal validation. Used for consistency.
+                dbscan_score, optics_score = clustering.validate(embedding, None, method='internal')  # NOTE: y (ratings) is not used for internal validation. Used for consistency.
                 print("DBSCAN silhouette score: ", dbscan_score)
                 dbscan_internal[i, eps_i] = dbscan_score
                 print("OPTICS silhouette score: ", optics_score)
@@ -79,7 +125,7 @@ for i in range(iterations):
 
                 # Do external validation.
                 print("External validation for ", embed)
-                dbscan_score, optics_score = clustering.validate(reviews, ratings, method='external')  # NOTE: y (ratings) is not used for internal validation. Used for consistency.
+                dbscan_score, optics_score = clustering.validate(embedding, ratings, method='external')  # NOTE: 'embeddings' is not used here.
                 print("DBSCAN adjusted rand index: ", dbscan_score)
                 dbscan_external[i, eps_i] = dbscan_score
                 print("OPTICS adjusted rand index: ", optics_score)
