@@ -27,9 +27,13 @@ To run the experiments, you need to have the following packages installed:
 
 Please install these packages according to your operating system and 
 package manager.
+This project was built using anaconda so use a conda environment to run the experiments install the packages and run the experiments.
 
-This project was built using anaconda.
 
+To install the packages, the run the following command:
+```
+pip install -r requirements.txt
+```
 
 
 ## Demo
