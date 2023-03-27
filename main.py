@@ -6,15 +6,14 @@ from models import Clustering
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+
 import seaborn as sns
 
-# Data reduction tools and other metrics.
-from sklearn.manifold import TSNE
 from sklearn.metrics import confusion_matrix
 from sklearn.preprocessing import StandardScaler
+from sklearn.manifold import TSNE
 
-
-def plot_clusters(embedding_data, true_labels, cluster_labels):
+def plot_clusters(embedding_data, true_labels, cluster_labels, algorithm='KMeans', num_clusters=3):
     tsne = TSNE(n_components=2)
     tsne_result = tsne.fit_transform(embedding_data)  # This is after dimensionality reduction.
 
@@ -27,10 +26,17 @@ def plot_clusters(embedding_data, true_labels, cluster_labels):
 
     # Plot using seaborn.
     plt.figure(figsize=(8, 8))
-    ax = sns.scatterplot(x='x', y='y', hue='cluster_label', data=df, pallete=sns.color_palette("hls", 10), legend="full")
+    ax = sns.scatterplot(x='x', y='y', hue='cluster_label', data=df, palette=sns.color_palette("hls", num_clusters),
+                         legend="full")
     # ax  = sns.scatterplot()  # Fill this out to plot the centroids.
-    plt.show()
+    plt.savefig(f"figures/{algorithm}_cluster_labels.png")
 
+    plt.clf()
+    plt.figure(figsize=(8, 8))
+    ax = sns.scatterplot(x='x', y='y', hue='true_label', data=df, palette=sns.color_palette("hls", num_clusters),
+                         legend="full")
+    # ax  = sns.scatterplot()  # Fill this out to plot the centroids.
+    plt.savefig(f"figures/{algorithm}_true_labels.png")
 
 
 
@@ -51,7 +57,7 @@ ratings -= 1 # To be in line with the labels assigned by the clustering algorith
 # embeddings = store_embeddings(reviews, model_name="bert", store_path="/Users/simpleparadox/PycharmProjects/cmput_697/embeds/bert_avg.npz")
 
 
-iterations = 50
+iterations = 1
 possible_clusters = [3]
 k_means_internal = np.zeros((iterations, len(possible_clusters)))
 agglomerative_internal = np.zeros((iterations, len(possible_clusters)))
@@ -103,7 +109,8 @@ for i in range(iterations):
 
                 # Do external validation.
                 print("External validation for ", embed)
-                # The check that we have to make here is if the predicted and the true labels are the same.
+                plot_clusters(embedding, ratings, clustering.alg1.labels_, 'KMeans', 3)
+                # The check that we have to make here is if the predicted and the true labels are the same. Plotting them will help.
                 kmeans_score, agglomerative_score = clustering.validate(embedding, ratings, method='external')  # NOTE: 'embeddings' is not used here.
                 print("Kmeans adjusted_rand_index: ", kmeans_score)
                 k_means_external[i, c_i] = kmeans_score

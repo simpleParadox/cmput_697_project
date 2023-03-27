@@ -13,6 +13,9 @@ from sklearn.cluster import AgglomerativeClustering
 from sklearn.cluster import DBSCAN
 from sklearn.cluster import OPTICS
 
+from sklearn.manifold import TSNE
+import seaborn as sns
+
 from sklearn.metrics import silhouette_score
 from sklearn.metrics import adjusted_rand_score
 
@@ -41,8 +44,33 @@ class Clustering:
         self.alg1.fit(X)
         self.alg2.fit(X)
 
+    def plot_clusters(self, embedding_data, true_labels, cluster_labels, algorithm='KMeans'):
+        tsne = TSNE(n_components=2)
+        tsne_result = tsne.fit_transform(embedding_data)  # This is after dimensionality reduction.
 
-    def validate(self, X, y=None, method="internal"):
+        # Get the components.
+        x = tsne_result[:, 0]
+        y = tsne_result[:, 1]
+
+        # Create a dataframe for easy plotting using seaborn.
+        df = pd.DataFrame({'x': x, 'y': y, 'true_label': true_labels, 'cluster_label': cluster_labels})
+
+        # Plot using seaborn.
+        plt.figure(figsize=(8, 8))
+        ax = sns.scatterplot(x='x', y='y', hue='cluster_label', data=df, pallete=sns.color_palette("hls", 10),
+                             legend="full")
+        # ax  = sns.scatterplot()  # Fill this out to plot the centroids.
+        plt.savefig(f"figures/{algorithm}_cluster_labels.png")
+
+        plt.clf()
+        plt.figure(figsize=(8, 8))
+        ax = sns.scatterplot(x='x', y='y', hue='true_label', data=df, pallete=sns.color_palette("hls", 10),
+                             legend="full")
+        # ax  = sns.scatterplot()  # Fill this out to plot the centroids.
+        plt.savefig(f"figures/{algorithm}_true_labels.png")
+
+
+    def validate(self, X, y=None, method="internal", plot_clusters=True):
         """
         Validate the clustering performance using some sort of internal and external validation.
         Supports only silhouette score for internal validation and adjusted rand index for external validation.
