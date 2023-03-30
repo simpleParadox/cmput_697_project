@@ -8,10 +8,8 @@ The goal of this project is to apply various clustering algorithms to different 
 
 What motivated this project?
 Customer reviews are important for businesses. They help businesses understand their customers and improve their products. However, there are instances, 
-where the ratings of the amazon reviews do not reflect the actual sentiment of the review text. For example, a review with a rating of 2 may actually have a review text that might
-be better suited for a 4 star rating. 
-In this project, we choose to look at a question that is a prerequisite to this problem. We ask the question, "What types of embeddings can we use to best represent the 
-review text, and how does the choice of embedding affect the performance of various clustering algorithms?"
+where the ratings of the amazon reviews do not reflect the actual sentiment of the review text. For example, a review with a rating of 2 may actually have a review text that might be better suited for a 4 star rating. Using a clustering algorithm trained on text embeddings, we can accurately assign the ratings of the reviews.
+In this project, we choose to look at a question that is a prerequisite to this problem. We ask the question, "What types of embeddings can we use to best represent the review text, and how does the choice of embedding affect the performance of various clustering algorithms?"
 
 
 ## Run the experiments.
