@@ -34,6 +34,20 @@ def load_review_and_ratings():
 
     return reviews, ratings, good_indices
 
+def get_df_for_plotting(embedding_data, true_labels, cluster_labels):
+
+    tsne = TSNE(n_components=2)
+    tsne_result = tsne.fit_transform(embedding_data)  # This is after dimensionality reduction.
+
+    # Get the components.
+    x = tsne_result[:, 0]
+    y = tsne_result[:, 1]
+
+    # Create a dataframe for easy plotting using seaborn.
+    df = pd.DataFrame({'x': x, 'y': y, 'true_label': true_labels, 'cluster_label': cluster_labels})
+    return df, df
+
+
 
 
 def run_clustering(embedding_type, clustering_algorithm, seed, n_clusters, eps, min_samples, metric):
@@ -45,6 +59,7 @@ def run_clustering(embedding_type, clustering_algorithm, seed, n_clusters, eps, 
     reviews, ratings, good_indices = load_review_and_ratings()
 
     if n_clusters == 3:
+        print("Relabeling the ratings")
         # Relabel the ratings if the number of selected clusters is 3, else leave them unchanged.
         ratings[ratings < 3] = 0
         ratings[ratings == 3] = 1
@@ -55,21 +70,29 @@ def run_clustering(embedding_type, clustering_algorithm, seed, n_clusters, eps, 
     model = None
 
     if embedding_type == 'Word2Vec - Average':
+        print("Loading Word2Vec - Average")
         embedding = np.load(f"embeds/w2v_embeddings.npz")['arr_0']
         embedding = embedding[good_indices]
 
     elif embedding_type == 'BERT - Average':
+        print("Loading BERT Average embeddings")
         embedding = np.load(f"embeds/bert_avg.npz")['arr_0']
         embedding = embedding[good_indices]
 
     elif embedding_type == 'BERT - CLS':
+        print("Loading BERT CLS embeddings")
         embedding = np.load(f"embeds/bert_embeddings.npz")['arr_0']
         embedding = embedding[good_indices]
 
     assert embedding is not None
 
+    # Mean center the data.
+    scaler = StandardScaler()
+    embedding = scaler.fit_transform(embedding)
+
     if clustering_algorithm == 'KMeans':
-        model = KMeans(n_clusters=n_clusters, random_state=seed)
+        print("Running KMeans")
+        model = KMeans(n_clusters=n_clusters, random_state=int(seed))
         model.fit(embedding)
 
     elif clustering_algorithm == 'Agglomerative Hierarchical':
@@ -90,7 +113,7 @@ def run_clustering(embedding_type, clustering_algorithm, seed, n_clusters, eps, 
     silhouette = silhouette_score(embedding, model.labels_)
     ari = adjusted_rand_score(ratings, model.labels_)
 
-    return silhouette, ari
+    return silhouette, ari, get_df_for_plotting(embedding, ratings, model.labels_)
 
 
 with gr.Blocks(theme=gr.themes.Soft()) as demo:
@@ -104,10 +127,10 @@ with gr.Blocks(theme=gr.themes.Soft()) as demo:
     with gr.Row():
         with gr.Column():
             seed = gr.Number(value=42, label='Seed', info='Choose the seed for the clustering algorithm.')
-            n_clusters = gr.Dropdown(['3', '5'], label='Number of clusters', info='Choose the number of clusters.')
+            n_clusters = gr.Dropdown(['3', '5'], label='Number of clusters', info='Choose the number of clusters.', value='3')
         with gr.Column():
-            eps = gr.Number(value=0.5, label='Epsilon', info='Choose the epsilon for Density based algorithms.')
-            min_samples = gr.Number(value=5, label='Min Samples', info='Choose the min samples for Density based algorithms.',)
+            eps = gr.Number(value=0.5, label='Epsilon (For density based algorithms only)', info='Choose the epsilon for Density based algorithms.')
+            min_samples = gr.Number(value=5, label='Min Samples (For density based algorithms only)', info='Choose the min samples for Density based algorithms.',)
     with gr.Row():
         metric = gr.Dropdown(['euclidean', 'manhattan', 'cosine'], label='Metric', info='Choose the metric for the clustering algorithm.', value='cosine')
     gr.HTML('<h1>Results</h1>')
@@ -116,9 +139,13 @@ with gr.Blocks(theme=gr.themes.Soft()) as demo:
             silhouette = gr.Textbox(label='Silhouette Score')
         with gr.Column():
             adjusted_rand = gr.Textbox(label='Adjusted Rand Score')
+    # gr.HTML('<h1>Visualization in 2D</h1>')
+    # with gr.Row():
+    #     true_plots = gr.ScatterPlot(x='x', y='y', value=df)
+    #     cluster_plots = gr.ScatterPlot(x='x', y='y', value=pd.DataFrame)
 
     btn = gr.Button('Run clustering')
-    btn.click(fn=run_clustering, inputs=[embedding_type, clustering_algorithm, seed, n_clusters, eps, min_samples, metric], outputs=[silhouette, adjusted_rand])
+    btn.click(fn=run_clustering, inputs=[embedding_type, clustering_algorithm, seed, n_clusters, eps, min_samples, metric], outputs=[silhouette, adjusted_rand])#, true_plots, cluster_plots])
 
 
 demo.launch()

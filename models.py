@@ -34,7 +34,7 @@ class Clustering:
         self.clustering_class = clustering_class
         if clustering_class == "partitioning":
             self.alg1 = KMeans(n_clusters=n_clusters, random_state=42)
-            self.alg2 = AgglomerativeClustering(n_clusters=n_clusters)
+            self.alg2 = AgglomerativeClustering(n_clusters=n_clusters, metric=metric, linkage="single")
         else:
             # The metric is used only for the density based clustering algorithm.
             self.alg1 = DBSCAN(eps=eps, min_samples=min_samples, metric=metric)
@@ -57,14 +57,14 @@ class Clustering:
 
         # Plot using seaborn.
         plt.figure(figsize=(8, 8))
-        ax = sns.scatterplot(x='x', y='y', hue='cluster_label', data=df, pallete=sns.color_palette("hls", 10),
+        ax = sns.scatterplot(x='x', y='y', hue='cluster_label', data=df, palette=sns.color_palette("hls", 10),
                              legend="full")
         # ax  = sns.scatterplot()  # Fill this out to plot the centroids.
         plt.savefig(f"figures/{algorithm}_cluster_labels.png")
 
         plt.clf()
         plt.figure(figsize=(8, 8))
-        ax = sns.scatterplot(x='x', y='y', hue='true_label', data=df, pallete=sns.color_palette("hls", 10),
+        ax = sns.scatterplot(x='x', y='y', hue='true_label', data=df, palette=sns.color_palette("hls", 10),
                              legend="full")
         # ax  = sns.scatterplot()  # Fill this out to plot the centroids.
         plt.savefig(f"figures/{algorithm}_true_labels.png")

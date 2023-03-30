@@ -4,3 +4,5 @@ seaborn
 pandas
 gensim
 matplotlib
+gradio
+transformers

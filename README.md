@@ -47,6 +47,7 @@ python gradio_app.py
 
 ## Embeddings
 
+NOTE: We mean center the embeddings before clustering using sklearn's StandardScaler.
 ## Clustering Algorithms
 
 ## Results

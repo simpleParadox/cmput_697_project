@@ -58,7 +58,7 @@ ratings -= 1 # To be in line with the labels assigned by the clustering algorith
 
 
 iterations = 1
-possible_clusters = [5]
+possible_clusters = [3]
 k_means_internal = np.zeros((iterations, len(possible_clusters)))
 agglomerative_internal = np.zeros((iterations, len(possible_clusters)))
 k_means_external = np.zeros((iterations, len(possible_clusters)))
@@ -79,6 +79,7 @@ if possible_clusters[0] == 3:
 
 
 for i in range(iterations):
+    print("Iteration: ", i)
     clustering_class = 'partitioning'
     # Load the embeddings.
     embed_names = ["bert_avg", "bert_embeddings", "w2v_embeddings"]
@@ -109,7 +110,7 @@ for i in range(iterations):
 
                 # Do external validation.
                 print("External validation for ", embed)
-                plot_clusters(embedding, ratings, clustering.alg1.labels_, 'KMeans', 3)
+                # plot_clusters(embedding, ratings, clustering.alg1.labels_, 'KMeans', 3)
                 # The check that we have to make here is if the predicted and the true labels are the same. Plotting them will help.
                 kmeans_score, agglomerative_score = clustering.validate(embedding, ratings, method='external')  # NOTE: 'embeddings' is not used here.
                 print("Kmeans adjusted_rand_index: ", kmeans_score)
@@ -117,8 +118,8 @@ for i in range(iterations):
                 print("Hierarchical adjusted_rand_index: ", agglomerative_score)
                 agglomerative_external[i, c_i] = agglomerative_score
 
-                clustering.plot_clusters(embedding_data=embedding, true_labels=ratings, cluster_labels=clustering.alg1.labels_, algorithm=f'K_Means - {embed}_{n_cluster}_clusters')
-                clustering.plot_clusters(embedding_data=embedding, true_labels=ratings, cluster_labels=clustering.alg2.labels_, algorithm=f'K_Means - {embed}_{n_cluster}_clusters')
+                plot_clusters(embedding_data=embedding, true_labels=ratings, cluster_labels=clustering.alg1.labels_, algorithm=f'K_Means - {embed}_{n_cluster}_clusters', num_clusters=n_cluster)
+                plot_clusters(embedding_data=embedding, true_labels=ratings, cluster_labels=clustering.alg2.labels_, algorithm=f'K_Means - {embed}_{n_cluster}_clusters', num_clusters=n_cluster)
         else:
             for eps_i, eps in enumerate(possible_eps):
                 print(f"Epsilon value: {eps}")
@@ -140,7 +141,9 @@ for i in range(iterations):
                 dbscan_external[i, eps_i] = dbscan_score
                 print("OPTICS adjusted rand index: ", optics_score)
                 optics_external[i, eps_i] = optics_score
-
+    print("------------------------------------------------------------------------------------------------------------------")
+    print("KMeans internal: ", k_means_internal)
+    print("Agglomerative internal: ", agglomerative_internal)
 
 # Calculate the means of the internal and external scores for each algorithm and
 
