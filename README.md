@@ -16,14 +16,14 @@ review text, and how does the choice of embedding affect the performance of vari
 
 ## Run the experiments.
 To run the experiments, you need to have the following packages installed:
-- numpy
-- pandas
-- sklearn
-- gensim
-- gradio (v3.23.0)
-- matplotlib
-- seaborn
+- scikit-learn
 - torch
+- seaborn
+- pandas
+- gensim
+- matplotlib
+- gradio
+- transformers
 
 Please install these packages according to your operating system and 
 package manager.
