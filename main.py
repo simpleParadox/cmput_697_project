@@ -58,7 +58,7 @@ ratings -= 1 # To be in line with the labels assigned by the clustering algorith
 
 
 iterations = 1
-possible_clusters = [3]
+possible_clusters = [5]
 k_means_internal = np.zeros((iterations, len(possible_clusters)))
 agglomerative_internal = np.zeros((iterations, len(possible_clusters)))
 k_means_external = np.zeros((iterations, len(possible_clusters)))
@@ -83,7 +83,7 @@ for i in range(iterations):
     # Load the embeddings.
     embed_names = ["bert_avg", "bert_embeddings", "w2v_embeddings"]
     for embed in embed_names:
-        embedding = np.load(f"embeds/{embed}.npz")['arr_0']
+        embedding = np.load(f"embeds/{embed}.npz", allow_pickle=True)['arr_0']
         embedding = embedding[good_indices]
 
         # Apply standard scalar on the embeddings.
@@ -116,6 +116,9 @@ for i in range(iterations):
                 k_means_external[i, c_i] = kmeans_score
                 print("Hierarchical adjusted_rand_index: ", agglomerative_score)
                 agglomerative_external[i, c_i] = agglomerative_score
+
+                clustering.plot_clusters(embedding_data=embedding, true_labels=ratings, cluster_labels=clustering.alg1.labels_, algorithm=f'K_Means - {embed}_{n_cluster}_clusters')
+                clustering.plot_clusters(embedding_data=embedding, true_labels=ratings, cluster_labels=clustering.alg2.labels_, algorithm=f'K_Means - {embed}_{n_cluster}_clusters')
         else:
             for eps_i, eps in enumerate(possible_eps):
                 print(f"Epsilon value: {eps}")
