@@ -50,6 +50,14 @@ NOTE: We mean center the embeddings before clustering using sklearn's StandardSc
 
 ## Results
 
+
+DBSCAN internal: eps=40.0=> 0.29167095  50.0=0.45513833, 60.0=0.4692
+HDBSCAN internal = -0.0124097 for everything, even for eps=60.0
+
+DBSCAN external: eps=40.0=>5.6732e-03  50.0=2.3222e-03, 60=0.003375
+HDBSCAN external: 006082314232855933 for all eps.
+
+
 ## Conclusion
 
 

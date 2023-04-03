@@ -57,18 +57,23 @@ ratings -= 1 # To be in line with the labels assigned by the clustering algorith
 # embeddings = store_embeddings(reviews, model_name="bert", store_path="/Users/simpleparadox/PycharmProjects/cmput_697/embeds/bert_avg.npz")
 
 
-iterations = 1
-possible_clusters = [3]
+iterations = 50
+possible_clusters = range(3, 20, 2)
 k_means_internal = np.zeros((iterations, len(possible_clusters)))
 agglomerative_internal = np.zeros((iterations, len(possible_clusters)))
 k_means_external = np.zeros((iterations, len(possible_clusters)))
 agglomerative_external = np.zeros((iterations, len(possible_clusters)))
 
-possible_eps = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6]
+# Really low values for values of eps under 10.0. NOTE: a value of 70.0 for DBSCAN leads to only one cluster.
+# Therefore, the minimum requirement is to have at least 2 clusters.
+# possible_eps = [10.0, 20.0, 30.0, 40.0, 50.0]
+possible_eps = [0.5, 1.0, 5.0, 10.0, 15.0] # Stop when the number of labels is less than 2. Not using 20.0. but there for compatibility.
+
+possible_min_cluster_size = [5, 10, 20, 25, 30]
 dbscan_internal = np.zeros((iterations, len(possible_eps)))
 dbscan_external = np.zeros((iterations, len(possible_eps)))
-optics_internal = np.zeros((iterations, len(possible_eps)))
-optics_external = np.zeros((iterations, len(possible_eps)))
+hdbscan_internal = np.zeros((iterations, len(possible_eps)))
+hdbscan_external = np.zeros((iterations, len(possible_eps)))
 
 
 if possible_clusters[0] == 3:
@@ -78,11 +83,20 @@ if possible_clusters[0] == 3:
     ratings[ratings > 3] = 2
 
 
+labels_dbscan = {}
+labels_hdbscan = {}
+
+labels_kmeans = {}
+labels_agglomerative = {}
+
+
 for i in range(iterations):
     print("Iteration: ", i)
     clustering_class = 'partitioning'
     # Load the embeddings.
-    embed_names = ["bert_avg", "bert_embeddings", "w2v_embeddings"]
+    embed_names = ["bert_avg"]
+    # embed_names = ["bert_embeddings"]
+    # embed_names = ["w2v_embeddings"]
     for embed in embed_names:
         embedding = np.load(f"embeds/{embed}.npz", allow_pickle=True)['arr_0']
         embedding = embedding[good_indices]
@@ -91,12 +105,14 @@ for i in range(iterations):
         scaler = StandardScaler()
         embedding = scaler.fit_transform(embedding)
 
+        inertia = []
+
         # Run the clustering algorithms on the selected embeddings.
         if clustering_class == 'partitioning':
             for c_i, n_cluster in enumerate(possible_clusters):
                 print(f"Number of clusters: {n_cluster}")
 
-                clustering = Clustering(n_clusters=n_cluster, eps=None, min_samples=5, metric="cosine")
+                clustering = Clustering(n_clusters=n_cluster, eps=None, min_samples=5, metric="euclidean", clustering_class=clustering_class, seed=i)
                 clustering.train(embedding)
 
                 # Do internal validation.
@@ -107,45 +123,98 @@ for i in range(iterations):
                 print("Hierarchical silhouette score: ", agglomerative_score)
                 agglomerative_internal[i, c_i] = agglomerative_score
 
+                labels_kmeans[n_cluster] = clustering.alg1.labels_
+                labels_agglomerative[n_cluster] = clustering.alg2.labels_
+
+                # Store the inertia scores for k-means clustering.
+                inertia.append(clustering.alg1.inertia_)
+
+
 
                 # Do external validation.
                 print("External validation for ", embed)
                 # plot_clusters(embedding, ratings, clustering.alg1.labels_, 'KMeans', 3)
                 # The check that we have to make here is if the predicted and the true labels are the same. Plotting them will help.
-                kmeans_score, agglomerative_score = clustering.validate(embedding, ratings, method='external')  # NOTE: 'embeddings' is not used here.
+                kmeans_score, agglomerative_score = clustering.validate(embedding, ratings, method='external')  # NOTE: 'embeddings' is not used here, kept for consistency.
                 print("Kmeans adjusted_rand_index: ", kmeans_score)
                 k_means_external[i, c_i] = kmeans_score
                 print("Hierarchical adjusted_rand_index: ", agglomerative_score)
                 agglomerative_external[i, c_i] = agglomerative_score
 
-                plot_clusters(embedding_data=embedding, true_labels=ratings, cluster_labels=clustering.alg1.labels_, algorithm=f'K_Means - {embed}_{n_cluster}_clusters', num_clusters=n_cluster)
-                plot_clusters(embedding_data=embedding, true_labels=ratings, cluster_labels=clustering.alg2.labels_, algorithm=f'K_Means - {embed}_{n_cluster}_clusters', num_clusters=n_cluster)
+                # plot_clusters(embedding_data=embedding, true_labels=ratings, cluster_labels=clustering.alg1.labels_, algorithm=f'K_Means - {embed}_{n_cluster}_clusters', num_clusters=n_cluster)
+                # plot_clusters(embedding_data=embedding, true_labels=ratings, cluster_labels=clustering.alg2.labels_, algorithm=f'K_Means - {embed}_{n_cluster}_clusters', num_clusters=n_cluster)
         else:
+            possible_eps = [2, 5, 10, 15, 20]  # Redefining this for the hdbscan.
+
             for eps_i, eps in enumerate(possible_eps):
                 print(f"Epsilon value: {eps}")
-                clustering = Clustering(n_clusters=None, eps=eps, min_samples=5, metric="euclidean")
+                clustering = Clustering(n_clusters=None, eps=5, min_cluster_size=eps, min_samples=5, metric="euclidean", clustering_class=clustering_class)
                 clustering.train(embedding)
+                print("Unique cluster labels: ", np.unique(clustering.alg1.labels_))
+
+
+                # Store the labels for DBSCAN.
+                labels_dbscan[eps] = clustering.alg1.labels_
+
+                # Store the labels for HDBSCAN.
+                labels_hdbscan[eps] = clustering.alg2.labels_
 
                 # Do internal validation.
                 print("Internal validation for ", embed)
-                dbscan_score, optics_score = clustering.validate(embedding, None, method='internal')  # NOTE: y (ratings) is not used for internal validation. Used for consistency.
+                dbscan_score, hdbscan_score = clustering.validate(embedding, None, method='internal')  # NOTE: y (ratings) is not used for internal validation. Used for consistency.
                 print("DBSCAN silhouette score: ", dbscan_score)
-                dbscan_internal[i, eps_i] = dbscan_score
-                print("OPTICS silhouette score: ", optics_score)
-                optics_internal[i, eps_i] = optics_score
+                # dbscan_internal[i, eps_i] = dbscan_score
 
-                # Do external validation.
-                print("External validation for ", embed)
-                dbscan_score, optics_score = clustering.validate(embedding, ratings, method='external')  # NOTE: 'embeddings' is not used here.
-                print("DBSCAN adjusted rand index: ", dbscan_score)
-                dbscan_external[i, eps_i] = dbscan_score
-                print("OPTICS adjusted rand index: ", optics_score)
-                optics_external[i, eps_i] = optics_score
+                print("HDBSCAN silhouette score: ", hdbscan_score)
+                hdbscan_internal[i, eps_i] = hdbscan_score
+
+                # # Do external validation.
+                # print("External validation for ", embed)
+                # # dbscan_score, hdbscan_score = clustering.validate(embedding, ratings, method='external')  # NOTE: 'embeddings' is not used here.
+                # print("DBSCAN adjusted rand index: ", dbscan_score)
+                # # dbscan_external[i, eps_i] = dbscan_score
+                # print("HDBSCAN adjusted rand index: ", hdbscan_score)
+                # # hdbscan_external[i, eps_i] = hdbscan_score
     print("------------------------------------------------------------------------------------------------------------------")
     print("KMeans internal: ", k_means_internal)
     print("Agglomerative internal: ", agglomerative_internal)
+    print("DBSCAN internal: ", dbscan_internal)
+    print("HDBSCAN internal: ", hdbscan_internal)
+    print("------------------------------------------------------------------------------------------------------------------")
+    print("KMeans external: ", k_means_external)
+    print("Agglomerative external: ", agglomerative_external)
+    print("DBSCAN external: ", dbscan_external)
+    print("HDBSCAN external: ", hdbscan_external)
 
+# Save the results.
+# First create a dictionary to store the scores and the labels.
+# results_dbscan = {}
+# results_hdbscan = {}
+# results_dbscan['dbscan_internal'] = dbscan_internal
+# results_hdbscan['hdbscan_internal'] = hdbscan_internal
+# results_dbscan['dbscan_labels'] = labels_dbscan
+# results_hdbscan['hdbscan_labels'] = labels_hdbscan
+
+results_kmeans = {}
+results_agglomerative = {}
+results_kmeans['k_means_internal'] = k_means_internal
+results_agglomerative['agglomerative_internal'] = agglomerative_internal
+results_kmeans['k_means_external'] = k_means_external
+results_agglomerative['agglomerative_external'] = agglomerative_external
+results_kmeans['k_means_labels'] = labels_kmeans
+results_agglomerative['agglomerative_labels'] = labels_agglomerative
+
+
+# np.savez_compressed(f"results/dbscan_internal_{embed}_{possible_clusters[0]}.npz", np.array(results_dbscan))
+# np.savez_compressed(f"results/dbscan_external_{embed}_{possible_clusters[0]}.npz", dbscan_external)
+# np.savez_compressed(f"results/hdbscan_internal_{embed}_{possible_clusters[0]}.npz", results_hdbscan)
+# np.savez_compressed(f"results/hdbscan_external_{embed}_{possible_clusters[0]}.npz", hdbscan_external)
 # Calculate the means of the internal and external scores for each algorithm and
+
+# Save the results for the partitioning algorithms.
+np.savez_compressed(f"results/k_means_results_{embed}_{possible_clusters[0]}.npz", np.array(results_kmeans))
+# np.savez_compressed(f"results/agglomerative_results_{embed}_{possible_clusters[0]}.npz", np.array(results_agglomerative))
+
 
 
 
@@ -159,3 +228,37 @@ for i in range(iterations):
 # One hypothesis is as follows:
 # 1. The performance of the algorithms are better when there are 5 clusters instead of 3 clusters.
 # 2. The performance of the algorithms are better when the ratings are divided into 3 clusters instead of 5 clusters.
+
+
+
+from sklearn.neighbors import NearestNeighbors
+
+neighbors = NearestNeighbors(n_neighbors=50)
+neighbors_fit = neighbors.fit(embedding)
+distances, indices = neighbors_fit.kneighbors(embedding)
+plt.clf()
+distances = np.sort(distances, axis=0)
+distances = distances[:,1]
+plt.plot(distances)
+plt.show()
+
+
+
+from scipy.stats import sem
+
+# Calculate the mean and standard error of the mean.
+k_means_mean = np.mean(k_means_internal, axis=0)
+k_means_sem = sem(k_means_internal, axis=0)
+
+
+# Plot the inertia for the k-means algorithm.
+plt.clf()
+sns.set_style("whitegrid")
+plt.plot(possible_clusters, k_means_mean)
+plt.fill_between(possible_clusters, k_means_mean - k_means_sem, k_means_mean + k_means_sem, alpha=0.1)
+# plt.plot(possible_clusters, results_kmeans['k_means_external'].reshape(-1))
+plt.title('Silhouette score for k-means')
+plt.xticks(possible_clusters)
+plt.xlabel('Number of clusters')
+plt.ylabel('Silhouette score')
+plt.show()

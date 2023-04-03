@@ -12,6 +12,7 @@ from sklearn.cluster import KMeans
 from sklearn.cluster import AgglomerativeClustering
 from sklearn.cluster import DBSCAN
 from sklearn.cluster import OPTICS
+from hdbscan import HDBSCAN
 
 from sklearn.manifold import TSNE
 import seaborn as sns
@@ -23,7 +24,7 @@ from sklearn.metrics import adjusted_rand_score
 
 class Clustering:
 
-    def __init__(self, n_clusters=None, eps=0.5, min_samples=5, metric="euclidean", clustering_class="partitioning"):
+    def __init__(self, n_clusters=None, eps=0.5, min_samples=5, min_cluster_size=5, metric="euclidean", clustering_class="partitioning", seed=42):
         """
         Initialize the clustering algorithms.
         :param n_clusters: for kmeans and hierarchical clustering.
@@ -33,12 +34,16 @@ class Clustering:
         """
         self.clustering_class = clustering_class
         if clustering_class == "partitioning":
-            self.alg1 = KMeans(n_clusters=n_clusters, random_state=42)
+            self.alg1 = KMeans(n_clusters=n_clusters, random_state=seed)
             self.alg2 = AgglomerativeClustering(n_clusters=n_clusters, metric=metric, linkage="single")
         else:
             # The metric is used only for the density based clustering algorithm.
             self.alg1 = DBSCAN(eps=eps, min_samples=min_samples, metric=metric)
-            self.alg2 = OPTICS(eps=eps, min_samples=min_samples, metric=metric)
+            if metric != 'cosine':
+                self.alg2 = HDBSCAN(min_cluster_size=min_cluster_size, metric=metric)
+            else:
+                print("HDBSCAN does not support cosine metric. Using DBSCAN instead.")
+                self.alg2 = DBSCAN(eps=eps, min_samples=min_samples, metric=metric)
 
     def train(self, X):
         self.alg1.fit(X)
@@ -81,8 +86,21 @@ class Clustering:
         """
         if method == "internal":
             # assert y == None, "y should be None for internal validation."
-            alg1_score = silhouette_score(X, self.alg1.labels_)
-            alg2_score = silhouette_score(X, self.alg2.labels_)
+            # Obtain the indices where the label value is -1.
+            # These are the outliers.
+            outliers1 = np.where(self.alg1.labels_ == -1)[0]
+            outliers2 = np.where(self.alg2.labels_ == -1)[0]
+            # Remove the outliers from the data.
+            X1 = np.delete(X, outliers1, axis=0)
+            X2 = np.delete(X, outliers2, axis=0)
+            # Remove the outliers from the labels.
+
+            y1 = np.delete(self.alg1.labels_, outliers1, axis=0)
+            y2 = np.delete(self.alg2.labels_, outliers2, axis=0)
+            print("labels1 :", y1)
+            print("labels2:", y2)
+            alg1_score = silhouette_score(X1, y1)
+            alg2_score = silhouette_score(X2, y2)
             return alg1_score, alg2_score
         elif method == "external":
             # assert y != None, "y should not be None for external validation."
