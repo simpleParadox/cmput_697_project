@@ -1,0 +1,66 @@
+<mxfile host="app.diagrams.net" modified="2023-03-31T00:00:36.772Z" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36" etag="DxKts6IlNgaeaE31PFL7" version="21.1.2" type="device">
+  <diagram name="Page-1" id="iIk6zkhuHf8UHQd33_wq">
+    <mxGraphModel dx="2954" dy="1160" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="gVzlG6uVDBdv5Kh9BNxe-3" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="gVzlG6uVDBdv5Kh9BNxe-1" target="gVzlG6uVDBdv5Kh9BNxe-2" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="gVzlG6uVDBdv5Kh9BNxe-1" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;Select review title, and review text, and rating&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="210" y="220" width="130" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="gVzlG6uVDBdv5Kh9BNxe-5" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="gVzlG6uVDBdv5Kh9BNxe-2" target="gVzlG6uVDBdv5Kh9BNxe-4" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="gVzlG6uVDBdv5Kh9BNxe-2" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;Concatenate review title and review text&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+          <mxGeometry x="360" y="220" width="130" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="gVzlG6uVDBdv5Kh9BNxe-7" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="gVzlG6uVDBdv5Kh9BNxe-4" target="gVzlG6uVDBdv5Kh9BNxe-6" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="gVzlG6uVDBdv5Kh9BNxe-4" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;Truncate each review to a maximum length of 512 words&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="1" vertex="1">
+          <mxGeometry x="510" y="220" width="130" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="gVzlG6uVDBdv5Kh9BNxe-6" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;Tokenize&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
+          <mxGeometry x="660" y="220" width="130" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="gVzlG6uVDBdv5Kh9BNxe-11" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="gVzlG6uVDBdv5Kh9BNxe-10" target="gVzlG6uVDBdv5Kh9BNxe-1" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="gVzlG6uVDBdv5Kh9BNxe-10" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;Remove samples without ratings&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;fontColor=#333333;strokeColor=#666666;" parent="1" vertex="1">
+          <mxGeometry x="60" y="220" width="130" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="gVzlG6uVDBdv5Kh9BNxe-12" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;Dataset containing tokenized reviews and corresponding ratings&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F6E9FC;strokeColor=#9673a6;" parent="1" vertex="1">
+          <mxGeometry x="440" y="370" width="140" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="gVzlG6uVDBdv5Kh9BNxe-13" value="" style="endArrow=classic;html=1;rounded=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" parent="1" source="gVzlG6uVDBdv5Kh9BNxe-6" target="gVzlG6uVDBdv5Kh9BNxe-12" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="370" y="410" as="sourcePoint" />
+            <mxPoint x="420" y="360" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="725" y="350" />
+              <mxPoint x="510" y="350" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="gVzlG6uVDBdv5Kh9BNxe-14" value="" style="endArrow=classic;html=1;rounded=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" parent="1" source="gVzlG6uVDBdv5Kh9BNxe-1" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="370" y="410" as="sourcePoint" />
+            <mxPoint x="510" y="370" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="275" y="350" />
+              <mxPoint x="510" y="350" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="euCmdLcc9ME-9SagkXgO-1" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;Ratings&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="330" y="350" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="euCmdLcc9ME-9SagkXgO-2" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;Tokenized Reviews&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="590" y="350" width="140" height="30" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
