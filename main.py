@@ -57,7 +57,7 @@ ratings -= 1 # To be in line with the labels assigned by the clustering algorith
 # embeddings = store_embeddings(reviews, model_name="bert", store_path="/Users/simpleparadox/PycharmProjects/cmput_697/embeds/bert_avg.npz")
 
 
-iterations = 50
+iterations = 1
 possible_clusters = range(3, 20, 2)
 k_means_internal = np.zeros((iterations, len(possible_clusters)))
 agglomerative_internal = np.zeros((iterations, len(possible_clusters)))
@@ -67,7 +67,8 @@ agglomerative_external = np.zeros((iterations, len(possible_clusters)))
 # Really low values for values of eps under 10.0. NOTE: a value of 70.0 for DBSCAN leads to only one cluster.
 # Therefore, the minimum requirement is to have at least 2 clusters.
 # possible_eps = [10.0, 20.0, 30.0, 40.0, 50.0]
-possible_eps = [0.5, 1.0, 5.0, 10.0, 15.0] # Stop when the number of labels is less than 2. Not using 20.0. but there for compatibility.
+# possible_eps = [0.5, 1.0, 5.0, 10.0, 15.0] # Stop when the number of labels is less than 2. Not using 20.0. but there for compatibility.
+possible_eps = [10.0]
 
 possible_min_cluster_size = [5, 10, 20, 25, 30]
 dbscan_internal = np.zeros((iterations, len(possible_eps)))
@@ -92,11 +93,11 @@ labels_agglomerative = {}
 
 for i in range(iterations):
     print("Iteration: ", i)
-    clustering_class = 'partitioning'
+    clustering_class = 'density'
     # Load the embeddings.
-    embed_names = ["bert_avg"]
+    # embed_names = ["bert_avg"]
     # embed_names = ["bert_embeddings"]
-    # embed_names = ["w2v_embeddings"]
+    embed_names = ["w2v_embeddings"]
     for embed in embed_names:
         embedding = np.load(f"embeds/{embed}.npz", allow_pickle=True)['arr_0']
         embedding = embedding[good_indices]
@@ -144,11 +145,11 @@ for i in range(iterations):
                 # plot_clusters(embedding_data=embedding, true_labels=ratings, cluster_labels=clustering.alg1.labels_, algorithm=f'K_Means - {embed}_{n_cluster}_clusters', num_clusters=n_cluster)
                 # plot_clusters(embedding_data=embedding, true_labels=ratings, cluster_labels=clustering.alg2.labels_, algorithm=f'K_Means - {embed}_{n_cluster}_clusters', num_clusters=n_cluster)
         else:
-            possible_eps = [2, 5, 10, 15, 20]  # Redefining this for the hdbscan.
+            # possible_eps = [2, 5, 10, 15, 20]  # Redefining this for the hdbscan.
 
             for eps_i, eps in enumerate(possible_eps):
                 print(f"Epsilon value: {eps}")
-                clustering = Clustering(n_clusters=None, eps=5, min_cluster_size=eps, min_samples=5, metric="euclidean", clustering_class=clustering_class)
+                clustering = Clustering(n_clusters=None, eps=5, min_cluster_size=10, min_samples=5, metric="euclidean", clustering_class=clustering_class)
                 clustering.train(embedding)
                 print("Unique cluster labels: ", np.unique(clustering.alg1.labels_))
 
@@ -212,8 +213,8 @@ results_agglomerative['agglomerative_labels'] = labels_agglomerative
 # Calculate the means of the internal and external scores for each algorithm and
 
 # Save the results for the partitioning algorithms.
-np.savez_compressed(f"results/k_means_results_{embed}_{possible_clusters[0]}.npz", np.array(results_kmeans))
-# np.savez_compressed(f"results/agglomerative_results_{embed}_{possible_clusters[0]}.npz", np.array(results_agglomerative))
+np.savez_compressed(f"results/k_means_results_{embed}_{possible_clusters[0]}_50_iters_fixed_seed.npz", np.array(results_kmeans))
+#np.savez_compressed(f"results/agglomerative_results_{embed}_{possible_clusters[0]}.npz", np.array(results_agglomerative))
 
 
 
@@ -231,34 +232,34 @@ np.savez_compressed(f"results/k_means_results_{embed}_{possible_clusters[0]}.npz
 
 
 
-from sklearn.neighbors import NearestNeighbors
-
-neighbors = NearestNeighbors(n_neighbors=50)
-neighbors_fit = neighbors.fit(embedding)
-distances, indices = neighbors_fit.kneighbors(embedding)
-plt.clf()
-distances = np.sort(distances, axis=0)
-distances = distances[:,1]
-plt.plot(distances)
-plt.show()
-
-
-
-from scipy.stats import sem
-
-# Calculate the mean and standard error of the mean.
-k_means_mean = np.mean(k_means_internal, axis=0)
-k_means_sem = sem(k_means_internal, axis=0)
-
-
-# Plot the inertia for the k-means algorithm.
-plt.clf()
-sns.set_style("whitegrid")
-plt.plot(possible_clusters, k_means_mean)
-plt.fill_between(possible_clusters, k_means_mean - k_means_sem, k_means_mean + k_means_sem, alpha=0.1)
-# plt.plot(possible_clusters, results_kmeans['k_means_external'].reshape(-1))
-plt.title('Silhouette score for k-means')
-plt.xticks(possible_clusters)
-plt.xlabel('Number of clusters')
-plt.ylabel('Silhouette score')
-plt.show()
+# from sklearn.neighbors import NearestNeighbors
+#
+# neighbors = NearestNeighbors(n_neighbors=50)
+# neighbors_fit = neighbors.fit(embedding)
+# distances, indices = neighbors_fit.kneighbors(embedding)
+# plt.clf()
+# distances = np.sort(distances, axis=0)
+# distances = distances[:,1]
+# plt.plot(distances)
+# plt.show()
+#
+#
+#
+# from scipy.stats import sem
+#
+# # Calculate the mean and standard error of the mean.
+# k_means_mean = np.mean(k_means_internal, axis=0)
+# k_means_sem = sem(k_means_internal, axis=0)
+#
+#
+# # Plot the inertia for the k-means algorithm.
+# plt.clf()
+# sns.set_style("whitegrid")
+# plt.plot(possible_clusters, k_means_mean)
+# plt.fill_between(possible_clusters, k_means_mean - k_means_sem, k_means_mean + k_means_sem, alpha=0.1)
+# # plt.plot(possible_clusters, results_kmeans['k_means_external'].reshape(-1))
+# plt.title('Silhouette score for k-means')
+# plt.xticks(possible_clusters)
+# plt.xlabel('Number of clusters')
+# plt.ylabel('Silhouette score')
+# plt.show()
