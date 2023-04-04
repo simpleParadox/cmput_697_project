@@ -36,8 +36,8 @@ plt.savefig("plots/rating_distribution.pdf")
 # Load the scores for the density based algorithms.
 # First load the internal scores.
 clusters = 3
-algorithm = 'k_means'
-score_type ='both'
+algorithm = 'agglomerative'
+score_type ='results'
 
 if score_type == 'internal':
     internal_bert_embeddings = np.load(f"results/{algorithm}_internal_bert_embeddings_{clusters}.npz", allow_pickle=True)['arr_0'].reshape(-1).tolist()[0][f'{algorithm}_internal'][0]
@@ -50,7 +50,14 @@ if score_type == 'external':
     external_bert_avg = np.load(f"results/{algorithm}_external_bert_avg_{clusters}.npz", allow_pickle=True)['arr_0'].reshape(-1)
     external_w2v_avg = np.load(f"results/{algorithm}_external_w2v_embeddings_{clusters}.npz", allow_pickle=True)['arr_0'].reshape(-1)
 
+if score_type == 'results':
+    # Load the results for Agglomerative Clustering only.
+    internal_bert_embeddings = np.load(f"results/{algorithm}_internal_results_bert_embeddings.npz", allow_pickle=True)['arr_0'].reshape(-1)
+    internal_bert_avg = np.load(f"results/{algorithm}_internal_results_bert_avg.npz", allow_pickle=True)['arr_0'].reshape(-1)
+    internal_w2v_avg = np.load(f"results/{algorithm}_internal_results_w2v_embeddings.npz", allow_pickle=True)['arr_0'].reshape(-1)
+
 if score_type == 'both':
+    # For KMeans only.
     internal_bert_embeddings = np.load(f"results/{algorithm}_results_bert_embeddings_{clusters}_50_iters_fixed_seed.npz", allow_pickle=True)['arr_0'].tolist()[f'{algorithm}_internal']
     internal_bert_avg = np.load(f"results/{algorithm}_results_bert_avg_{clusters}_50_iters_fixed_seed.npz", allow_pickle=True)['arr_0'].tolist()[f'{algorithm}_internal']
     internal_w2v_avg = np.load(f"results/{algorithm}_results_w2v_embeddings_{clusters}_50_iters_fixed_seed.npz", allow_pickle=True)['arr_0'].tolist()[f'{algorithm}_internal']
@@ -75,8 +82,12 @@ elif score_type == 'external':
                        'bert_embeddings': external_bert_embeddings,
                        'bert_avg': external_bert_avg,
                        'w2v_avg': external_w2v_avg})
-
-# Both
+elif score_type == 'results':
+    df = pd.DataFrame({'n_clusters': np.array(possible_clusters),
+                       'bert_embeddings': internal_bert_embeddings,
+                       'bert_avg': internal_bert_avg,
+                       'w2v_avg': internal_w2v_avg})
+# For KMeans.
 elif score_type == 'both':
     df = pd.DataFrame({'n_clusters': np.array(possible_clusters),
                        'bert_embeddings': np.mean(internal_bert_embeddings, axis=0),
@@ -115,11 +126,14 @@ if score_type == 'internal' or score_type == 'both':
 elif score_type == 'external':
     plt.title(f"External Validation Scores for {algorithm} for {clusters} clusters", fontsize=14)
     plt.ylabel("Adjusted Rand Score", fontsize=14)
+if score_type == 'results':
+    plt.title(f"Internal Validation Scores for {algorithm} single linkage", fontsize=14)
+    plt.ylabel("Silhouette Score", fontsize=14)
 
 
 plt.legend(fontsize=12)
 plt.tight_layout()
-plt.savefig(f"plots/score_plots/{algorithm}_internal_validation_50_iters_fixed_seed.pdf")
+plt.savefig(f"plots/score_plots/{algorithm}_internal_validation.pdf")
 # plt.show()
 
 

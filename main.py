@@ -57,8 +57,8 @@ ratings -= 1 # To be in line with the labels assigned by the clustering algorith
 # embeddings = store_embeddings(reviews, model_name="bert", store_path="/Users/simpleparadox/PycharmProjects/cmput_697/embeds/bert_avg.npz")
 
 
-iterations = 50
-possible_clusters = [5] # range(3, 20, 2)
+iterations = 1
+possible_clusters = [5] #range(3, 20, 2)
 k_means_internal = np.zeros((iterations, len(possible_clusters)))
 agglomerative_internal = np.zeros((iterations, len(possible_clusters)))
 k_means_external = np.zeros((iterations, len(possible_clusters)))
@@ -113,7 +113,7 @@ for i in range(iterations):
             for c_i, n_cluster in enumerate(possible_clusters):
                 print(f"Number of clusters: {n_cluster}")
 
-                clustering = Clustering(n_clusters=n_cluster, eps=None, min_samples=5, metric="euclidean", clustering_class=clustering_class, seed=i)
+                clustering = Clustering(n_clusters=n_cluster, eps=None, min_samples=5, metric="euclidean", clustering_class=clustering_class, seed=i)  # The seed is only used for the KMeans algorithm.
                 clustering.train(embedding)
 
                 # Do internal validation.
@@ -213,8 +213,8 @@ results_agglomerative['agglomerative_labels'] = labels_agglomerative
 # Calculate the means of the internal and external scores for each algorithm and
 
 # Save the results for the partitioning algorithms.
-np.savez_compressed(f"results/k_means_external_{embed}_{possible_clusters[0]}_50_iters_fixed_seed.npz", np.array(k_means_external))
-# np.savez_compressed(f"results/agglomerative_results_{embed}_{possible_clusters[0]}.npz", np.array(results_agglomerative))
+# np.savez_compressed(f"results/k_means_external_{embed}_{possible_clusters[0]}_50_iters_fixed_seed.npz", np.array(k_means_external))
+np.savez_compressed(f"results/agglomerative_external_{embed}_{possible_clusters[0]}.npz", np.array(agglomerative_external))
 
 
 
