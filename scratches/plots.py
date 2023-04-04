@@ -38,6 +38,7 @@ plt.savefig("plots/rating_distribution.pdf")
 clusters = 3
 algorithm = 'k_means'
 score_type ='both'
+
 if score_type == 'internal':
     internal_bert_embeddings = np.load(f"results/{algorithm}_internal_bert_embeddings_{clusters}.npz", allow_pickle=True)['arr_0'].reshape(-1).tolist()[0][f'{algorithm}_internal'][0]
     internal_bert_avg = np.load(f"results/{algorithm}_internal_bert_avg_{clusters}.npz", allow_pickle=True)['arr_0'].reshape(-1).tolist()[0][f'{algorithm}_internal'][0]
@@ -84,6 +85,13 @@ elif score_type == 'both':
                        'bert_embeddings_sem': sem(internal_bert_embeddings, axis=0),
                        'bert_avg_sem': sem(internal_bert_avg, axis=0),
                         'w2v_avg_sem': sem(internal_w2v_avg, axis=0)})
+    df_external = pd.DataFrame({'n_clusters': np.array(possible_clusters),
+                       'bert_embeddings': np.mean(external_bert_embeddings, axis=0),
+                       'bert_avg': np.mean(external_bert_avg, axis=0),
+                       'w2v_avg': np.mean(external_w2v_avg, axis=0),
+                       'bert_embeddings_sem': sem(external_bert_embeddings, axis=0),
+                       'bert_avg_sem': sem(external_bert_avg, axis=0),
+                        'w2v_avg_sem': sem(external_w2v_avg, axis=0)})
 #
 
 # Now plot the scores in seaborn.

@@ -57,8 +57,8 @@ ratings -= 1 # To be in line with the labels assigned by the clustering algorith
 # embeddings = store_embeddings(reviews, model_name="bert", store_path="/Users/simpleparadox/PycharmProjects/cmput_697/embeds/bert_avg.npz")
 
 
-iterations = 1
-possible_clusters = range(3, 20, 2)
+iterations = 50
+possible_clusters = [5] # range(3, 20, 2)
 k_means_internal = np.zeros((iterations, len(possible_clusters)))
 agglomerative_internal = np.zeros((iterations, len(possible_clusters)))
 k_means_external = np.zeros((iterations, len(possible_clusters)))
@@ -93,7 +93,7 @@ labels_agglomerative = {}
 
 for i in range(iterations):
     print("Iteration: ", i)
-    clustering_class = 'density'
+    clustering_class = 'partitioning'
     # Load the embeddings.
     # embed_names = ["bert_avg"]
     # embed_names = ["bert_embeddings"]
@@ -213,8 +213,8 @@ results_agglomerative['agglomerative_labels'] = labels_agglomerative
 # Calculate the means of the internal and external scores for each algorithm and
 
 # Save the results for the partitioning algorithms.
-np.savez_compressed(f"results/k_means_results_{embed}_{possible_clusters[0]}_50_iters_fixed_seed.npz", np.array(results_kmeans))
-#np.savez_compressed(f"results/agglomerative_results_{embed}_{possible_clusters[0]}.npz", np.array(results_agglomerative))
+np.savez_compressed(f"results/k_means_external_{embed}_{possible_clusters[0]}_50_iters_fixed_seed.npz", np.array(k_means_external))
+# np.savez_compressed(f"results/agglomerative_results_{embed}_{possible_clusters[0]}.npz", np.array(results_agglomerative))
 
 
 
@@ -245,8 +245,59 @@ np.savez_compressed(f"results/k_means_results_{embed}_{possible_clusters[0]}_50_
 #
 #
 #
-# from scipy.stats import sem
-#
+from scipy.stats import sem
+
+
+kmeans_external_bert_avg_3 = np.load("results/k_means_external_bert_avg_3_50_iters_fixed_seed.npz")['arr_0']
+kmeans_external_bert_avg_5 = np.load("results/k_means_external_bert_avg_5_50_iters_fixed_seed.npz")['arr_0']
+kmeans_external_bert_embeddings_3 = np.load("results/k_means_external_bert_embeddings_3_50_iters_fixed_seed.npz")['arr_0']
+kmeans_external_bert_embeddings_5 = np.load("results/k_means_external_bert_embeddings_5_50_iters_fixed_seed.npz")['arr_0']
+kmeans_external_w2v_embeddings_3 = np.load("results/k_means_external_w2v_embeddings_3_50_iters_fixed_seed.npz")['arr_0']
+kmeans_external_w2v_embeddings_5 = np.load("results/k_means_external_w2v_embeddings_5_50_iters_fixed_seed.npz")['arr_0']
+
+
+# Create a dataframe to store the results.
+# results = pd.DataFrame(columns=['bert_avg_3', 'bert_avg_5', 'bert_embeddings_3', 'bert_embeddings_5', 'w2v_embeddings_3', 'w2v_embeddings_5'])
+# results['bert_avg_3'] = kmeans_external_bert_avg_3
+# results['bert_avg_5'] = kmeans_external_bert_avg_5
+# results['bert_embeddings_3'] = kmeans_external_bert_embeddings_3
+# results['bert_embeddings_5'] = kmeans_external_bert_embeddings_5
+# results['w2v_embeddings_3'] = kmeans_external_w2v_embeddings_3
+# results['w2v_embeddings_5'] = kmeans_external_w2v_embeddings_5
+
+
+# Calculate the mean and standard error of the mean for each algorithm.
+embedding_type = ['BERT - Average', 'BERT - CLS', 'Word2Vec - Average']
+
+results_dict = {
+    '3': [np.mean(kmeans_external_bert_avg_3), np.mean(kmeans_external_bert_embeddings_3), np.mean(kmeans_external_w2v_embeddings_3)],
+    '5': [np.mean(kmeans_external_bert_avg_5), np.mean(kmeans_external_bert_embeddings_5), np.mean(kmeans_external_w2v_embeddings_5)]
+}
+
+x = np.arange(len(embedding_type))  # the label locations
+width = 0.35  # the width of the bars
+multiplier = 0
+plt.clf()
+sns.set_style("whitegrid")
+fig, ax = plt.subplots(layout='tight')
+
+for attribute, measurement in results_dict.items():
+    offset = width * multiplier
+    rects = ax.bar(x + offset, measurement, width, label=attribute)
+    ax.bar_label(rects, padding=3)
+    multiplier += 1
+
+# Add some text for labels, title and custom x-axis tick labels, etc.
+ax.set_ylabel('Adjusted Rand Index', fontsize=14)
+ax.set_title('KMeans - External Validation for 3 and 5 clusters')
+ax.set_xticks(x + width, embedding_type, fontsize=12)
+ax.legend(loc='upper left', ncols=3, title='Number of clusters')
+ax.set_xlabel("Embedding type", fontsize=14)
+plt.savefig('plots/score_plots/kmeans_external_validation.pdf')
+# plt.show()
+
+
+
 # # Calculate the mean and standard error of the mean.
 # k_means_mean = np.mean(k_means_internal, axis=0)
 # k_means_sem = sem(k_means_internal, axis=0)
