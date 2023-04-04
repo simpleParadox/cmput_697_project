@@ -256,15 +256,6 @@ kmeans_external_w2v_embeddings_3 = np.load("results/k_means_external_w2v_embeddi
 kmeans_external_w2v_embeddings_5 = np.load("results/k_means_external_w2v_embeddings_5_50_iters_fixed_seed.npz")['arr_0']
 
 
-# Create a dataframe to store the results.
-# results = pd.DataFrame(columns=['bert_avg_3', 'bert_avg_5', 'bert_embeddings_3', 'bert_embeddings_5', 'w2v_embeddings_3', 'w2v_embeddings_5'])
-# results['bert_avg_3'] = kmeans_external_bert_avg_3
-# results['bert_avg_5'] = kmeans_external_bert_avg_5
-# results['bert_embeddings_3'] = kmeans_external_bert_embeddings_3
-# results['bert_embeddings_5'] = kmeans_external_bert_embeddings_5
-# results['w2v_embeddings_3'] = kmeans_external_w2v_embeddings_3
-# results['w2v_embeddings_5'] = kmeans_external_w2v_embeddings_5
-
 
 # Calculate the mean and standard error of the mean for each algorithm.
 embedding_type = ['BERT - Average', 'BERT - CLS', 'Word2Vec - Average']
@@ -273,6 +264,22 @@ results_dict = {
     '3': [np.mean(kmeans_external_bert_avg_3), np.mean(kmeans_external_bert_embeddings_3), np.mean(kmeans_external_w2v_embeddings_3)],
     '5': [np.mean(kmeans_external_bert_avg_5), np.mean(kmeans_external_bert_embeddings_5), np.mean(kmeans_external_w2v_embeddings_5)]
 }
+
+# agg_external_bert_avg_3 = np.load("results/agglomerative_external_bert_avg_3.npz")['arr_0'][0]
+# agg_external_bert_avg_5 = np.load("results/agglomerative_external_bert_avg_5.npz")['arr_0'][0]
+# agg_external_bert_embeddings_3 = np.load("results/agglomerative_external_bert_embeddings_3.npz")['arr_0'][0]
+# agg_external_bert_embeddings_5 = np.load("results/agglomerative_external_bert_embeddings_5.npz")['arr_0'][0]
+# agg_external_w2v_embeddings_3 = np.load("results/agglomerative_external_w2v_embeddings_3.npz")['arr_0'][0]
+# agg_external_w2v_embeddings_5 = np.load("results/agglomerative_external_w2v_embeddings_5.npz")['arr_0'][0]
+#
+# # Redefine the results dictionary with the values of the agg_external results.
+# results_dict = {
+#     '3': [np.mean(agg_external_bert_avg_3), np.mean(agg_external_bert_embeddings_3), np.mean(agg_external_w2v_embeddings_3)],
+#     '5': [np.mean(agg_external_bert_avg_5), np.mean(agg_external_bert_embeddings_5), np.mean(agg_external_w2v_embeddings_5)]
+# }
+
+
+# Load the external validation results for agglomerative clustering.
 
 x = np.arange(len(embedding_type))  # the label locations
 width = 0.35  # the width of the bars
@@ -284,16 +291,16 @@ fig, ax = plt.subplots(layout='tight')
 for attribute, measurement in results_dict.items():
     offset = width * multiplier
     rects = ax.bar(x + offset, measurement, width, label=attribute)
-    ax.bar_label(rects, padding=3)
+    ax.bar_label(rects, padding=1)
     multiplier += 1
 
 # Add some text for labels, title and custom x-axis tick labels, etc.
-ax.set_ylabel('Adjusted Rand Index', fontsize=14)
+ax.set_ylabel('Adjusted Rand Score', fontsize=14)
 ax.set_title('KMeans - External Validation for 3 and 5 clusters')
 ax.set_xticks(x + width, embedding_type, fontsize=12)
 ax.legend(loc='upper left', ncols=3, title='Number of clusters')
 ax.set_xlabel("Embedding type", fontsize=14)
-plt.savefig('plots/score_plots/kmeans_external_validation.pdf')
+plt.savefig('plots/score_plots/kmeans_external_validation.png')
 # plt.show()
 
 
