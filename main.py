@@ -58,7 +58,7 @@ ratings -= 1 # To be in line with the labels assigned by the clustering algorith
 
 
 iterations = 1
-possible_clusters = [5] #range(3, 20, 2)
+possible_clusters = [3] #range(3, 20, 2)
 k_means_internal = np.zeros((iterations, len(possible_clusters)))
 agglomerative_internal = np.zeros((iterations, len(possible_clusters)))
 k_means_external = np.zeros((iterations, len(possible_clusters)))
@@ -68,7 +68,7 @@ agglomerative_external = np.zeros((iterations, len(possible_clusters)))
 # Therefore, the minimum requirement is to have at least 2 clusters.
 # possible_eps = [10.0, 20.0, 30.0, 40.0, 50.0]
 # possible_eps = [0.5, 1.0, 5.0, 10.0, 15.0] # Stop when the number of labels is less than 2. Not using 20.0. but there for compatibility.
-possible_eps = [10.0]
+possible_eps = [15.0]
 
 possible_min_cluster_size = [5, 10, 20, 25, 30]
 dbscan_internal = np.zeros((iterations, len(possible_eps)))
@@ -149,7 +149,7 @@ for i in range(iterations):
 
             for eps_i, eps in enumerate(possible_eps):
                 print(f"Epsilon value: {eps}")
-                clustering = Clustering(n_clusters=None, eps=5, min_cluster_size=10, min_samples=5, metric="euclidean", clustering_class=clustering_class)
+                clustering = Clustering(n_clusters=None, eps=eps, min_cluster_size=20, min_samples=5, metric="euclidean", clustering_class=clustering_class)
                 clustering.train(embedding)
                 print("Unique cluster labels: ", np.unique(clustering.alg1.labels_))
 

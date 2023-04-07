@@ -14,7 +14,7 @@ In this project, we choose to look at a question that is a prerequisite to this 
 
 ## Install python packages.
 The project uses anaconda environments.
-- conda create -n <env_name> python=3.8  # Where <env_name> is the name of your environment.
+- conda create -n <env_name> python=3.9  # Where <env_name> is the name of your environment.
 - conda activate <env_name>
 
 To run the experiments, you need to have the following packages installed (you can use pip for these):

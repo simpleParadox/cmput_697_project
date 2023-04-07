@@ -51,12 +51,13 @@ def get_df_for_plotting(embedding_data, true_labels, cluster_labels):
 
 
 
-def run_clustering(embedding_type, clustering_algorithm, seed, n_clusters, eps, min_samples, metric):
+def run_clustering(embedding_type, clustering_algorithm, seed, n_clusters, eps, min_samples, min_cluster_size, metric):
     # Write a bunch of if else conditions
     print("Running clustering")
     print("Number of clusters: ", n_clusters)
     n_clusters = int(n_clusters)
     min_samples = int(min_samples)
+    min_cluster_size = int(min_cluster_size)
 
     reviews, ratings, good_indices = load_review_and_ratings()
 
@@ -98,17 +99,20 @@ def run_clustering(embedding_type, clustering_algorithm, seed, n_clusters, eps, 
         model.fit(embedding)
 
     elif clustering_algorithm == 'Agglomerative Hierarchical - single linkage':
-        model = AgglomerativeClustering(n_clusters=n_clusters)
+        print("Running Agglomerative Hierarchical - single linkage")
+        model = AgglomerativeClustering(n_clusters=n_clusters, metric=metric, linkage='single')
         model.fit(embedding)
 
     elif clustering_algorithm == 'DBSCAN':
+        print("Running DBSCAN")
         model = DBSCAN(eps=eps, min_samples=min_samples, metric=metric)
         model.fit(embedding)
 
     elif clustering_algorithm == 'HDBSCAN':
+        print("Running HDBSCAN")
         if metric == 'cosine':
             raise gr.Error("HDBSCAN does not support cosine similarity. Please choose another metric.")
-        model = HDBSCAN(min_cluster_size=min_samples, metric=metric)
+        model = HDBSCAN(min_cluster_size=min_cluster_size, metric=metric)
         model.fit(embedding)
 
 
@@ -117,7 +121,7 @@ def run_clustering(embedding_type, clustering_algorithm, seed, n_clusters, eps, 
     silhouette = silhouette_score(embedding, model.labels_)
     ari = adjusted_rand_score(ratings, model.labels_)
 
-    return silhouette, ari, get_df_for_plotting(embedding, ratings, model.labels_)
+    return silhouette, ari#, get_df_for_plotting(embedding, ratings, model.labels_)
 
 
 with gr.Blocks(theme=gr.themes.Soft()) as demo:
@@ -130,13 +134,15 @@ with gr.Blocks(theme=gr.themes.Soft()) as demo:
     gr.HTML('<h1>Choose Hyperparameters</h1>')
     with gr.Row():
         with gr.Column():
-            seed = gr.Number(value=42, label='Seed', info='Choose the seed for the clustering algorithm.')
-            n_clusters = gr.Dropdown(['3', '5'], label='Number of clusters', info='Choose the number of clusters.', value='3')
+            seed = gr.Number(value=42, label='Seed (For KMeans)', info='Choose the seed for the clustering algorithm.')
+            n_clusters = gr.Dropdown(['3', '5'], label='Number of clusters (For single linkage hierarchical)', info='Choose the number of clusters.', value='3')
         with gr.Column():
-            eps = gr.Number(value=0.5, label='Epsilon (For density based algorithms only - not used for hdbscan)', info='Choose the epsilon for Density based algorithms.')
-            min_samples = gr.Number(value=5, label='Min Samples (For density based algorithms only)', info='Choose the min samples for Density based algorithms.',)
+            with gr.Row():
+                eps = gr.Number(value=0.5, label='Epsilon (For DBSCAN)', info='Choose the epsilon for DBSCAN.')
+                min_samples = gr.Number(value=5, label='Min Samples (For DBSCAN)', info='Choose the min_samples for DBSCAN.')
+            min_cluster_size = gr.Number(value=5, label='Min Cluster Size (For HDBSCAN)', info='Choose the min_cluster_size for HDBSCAN.')
     with gr.Row():
-        metric = gr.Dropdown(['euclidean', 'manhattan', 'cosine'], label='Metric', info='Choose the metric for the clustering algorithm.', value='cosine')
+        metric = gr.Dropdown(['euclidean', 'manhattan', 'cosine'], label='Metric', info='Choose the metric for the clustering algorithm.', value='euclidean')
     gr.HTML('<h1>Results</h1>')
     with gr.Row():
         with gr.Column():
@@ -149,7 +155,7 @@ with gr.Blocks(theme=gr.themes.Soft()) as demo:
     #     cluster_plots = gr.ScatterPlot(x='x', y='y', value=pd.DataFrame)
 
     btn = gr.Button('Run clustering')
-    btn.click(fn=run_clustering, inputs=[embedding_type, clustering_algorithm, seed, n_clusters, eps, min_samples, metric], outputs=[silhouette, adjusted_rand])#, true_plots, cluster_plots])
+    btn.click(fn=run_clustering, inputs=[embedding_type, clustering_algorithm, seed, n_clusters, eps, min_samples, min_cluster_size, metric], outputs=[silhouette, adjusted_rand])#, true_plots, cluster_plots])
 
 
 demo.launch()
