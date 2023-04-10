@@ -93,11 +93,11 @@ labels_agglomerative = {}
 
 for i in range(iterations):
     print("Iteration: ", i)
-    clustering_class = 'partitioning'
+    clustering_class = 'density'
     # Load the embeddings.
-    # embed_names = ["bert_avg"]
+    embed_names = ["bert_avg"]
     # embed_names = ["bert_embeddings"]
-    embed_names = ["w2v_embeddings"]
+    # embed_names = ["w2v_embeddings"]
     for embed in embed_names:
         embedding = np.load(f"embeds/{embed}.npz", allow_pickle=True)['arr_0']
         embedding = embedding[good_indices]

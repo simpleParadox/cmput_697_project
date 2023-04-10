@@ -3,10 +3,46 @@ from preprocess import load_data, store_embeddings
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from sklearn.manifold import TSNE
 
 import seaborn as sns
 
 from scipy.stats import sem
+
+
+# Load the ratings.
+reviews, ratings = load_data()
+
+# Load the embeddings from the embeds directory.
+embedding_type = 'w2v_embeddings'
+embeddings = np.load("embeds/{}.npz".format(embedding_type), allow_pickle=True)['arr_0']
+good_indices = np.where(np.isnan(ratings) == False)[0]
+ratings = np.array(ratings)[good_indices]
+embeddings = embeddings[good_indices]
+
+# Now run TSNE on the embedding for two dimensions.
+tsne = TSNE(n_components=2)
+tsne_result = tsne.fit_transform(embeddings)  # This is after dimensionality reduction.
+
+# Now create a dataframe for easy plotting.
+x = tsne_result[:, 0]
+y = tsne_result[:, 1]
+df = pd.DataFrame({'x': x, 'y': y, 'ratings': ratings})
+
+# Now plot the x and y coordinates from the dataframe and set the hue to the ratings.
+plt.clf()
+sns.scatterplot(x='x', y='y', hue='ratings', data=df, palette=sns.color_palette('colorblind', 5))
+plt.title("TSNE plot of {} embeddings".format(embedding_type))
+plt.xlabel("TSNE component 1", fontsize=14)
+plt.ylabel("TSNE component 2", fontsize=14)
+plt.savefig("plots/{}_tsne.pdf".format(embedding_type))
+
+
+
+
+
+
+
 
 
 # Load the data
