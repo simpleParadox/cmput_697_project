@@ -32,10 +32,10 @@ df = pd.DataFrame({'x': x, 'y': y, 'ratings': ratings})
 # Now plot the x and y coordinates from the dataframe and set the hue to the ratings.
 plt.clf()
 sns.scatterplot(x='x', y='y', hue='ratings', data=df, palette=sns.color_palette('colorblind', 5))
-plt.title("TSNE plot of {} embeddings".format(embedding_type))
+plt.title("TSNE plot of Word2Vec - Average embeddings")
 plt.xlabel("TSNE component 1", fontsize=14)
 plt.ylabel("TSNE component 2", fontsize=14)
-plt.savefig("plots/{}_tsne.pdf".format(embedding_type))
+plt.savefig("plots/{}_tsne.png".format(embedding_type))
 
 
 

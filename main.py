@@ -1,7 +1,7 @@
 # Custom python files.
 from preprocess import load_data, store_embeddings
 from models import Clustering
-
+import argparse
 # General python data science packages.
 import numpy as np
 import pandas as pd
@@ -40,6 +40,22 @@ def plot_clusters(embedding_data, true_labels, cluster_labels, algorithm='KMeans
 
 
 
+# Define command line arguments.
+
+parser = argparse.ArgumentParser(description='Run clustering algorithms on the Amazon reviews dataset.')
+parser.add_argument('--embedding_type', '-et', type=str, default='bert', help='The type of embedding to use.', required=True)
+parser.add_argument('--clustering_algorithm_type', '-alg_type', type=str, default='kmeans', help='The clustering algorithm to use.')
+parser.add_argument('--seed', type=int, default=42, help='The random seed to use.')
+parser.add_argument('--n_clusters', type=int, default=3, help='The number of clusters to use.')
+parser.add_argument('--eps', type=float, default=0.5, help='The eps parameter for DBSCAN.')
+parser.add_argument('--min_samples', type=int, default=5, help='The min_samples parameter for DBSCAN.')
+parser.add_argument('--min_cluster_size', type=int, default=10, help='The min_cluster_size parameter for HDBSCAN.')
+parser.add_argument('--metric', type=str, default='euclidean', help='The metric to use for the clustering algorithms.')
+parser.add_argument("--n_ratings", type=int, default=5, help="The number of ratings to use.", required=True)
+args = parser.parse_args()
+
+
+
 
 # Load the data
 reviews, ratings = load_data()
@@ -68,7 +84,8 @@ agglomerative_external = np.zeros((iterations, len(possible_clusters)))
 # Therefore, the minimum requirement is to have at least 2 clusters.
 # possible_eps = [10.0, 20.0, 30.0, 40.0, 50.0]
 # possible_eps = [0.5, 1.0, 5.0, 10.0, 15.0] # Stop when the number of labels is less than 2. Not using 20.0. but there for compatibility.
-possible_eps = [15.0]
+# possible_eps = [15.0]
+possible_eps = args.eps
 
 possible_min_cluster_size = [5, 10, 20, 25, 30]
 dbscan_internal = np.zeros((iterations, len(possible_eps)))
