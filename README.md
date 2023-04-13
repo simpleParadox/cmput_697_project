@@ -88,7 +88,7 @@ python main.py --embedding_type "bert_avg" --clustering_algorithm_type density
 ```
 
 ## Framework
-
+![Experimental Framework](https://github.com/simpleParadox/cmput_697_project/blob/main/plots/experimental_framework.png)
 ## Embeddings
 
 NOTE: We mean center the embeddings before clustering using sklearn's StandardScaler.
