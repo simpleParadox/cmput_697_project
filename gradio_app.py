@@ -95,7 +95,7 @@ def run_clustering(embedding_type, clustering_algorithm, seed, n_clusters, eps, 
 
     if clustering_algorithm == 'KMeans':
         print("Running KMeans")
-        model = KMeans(n_clusters=n_clusters, random_state=int(seed))
+        model = KMeans(n_clusters=n_clusters, random_state=np.abs(int(seed)))
         model.fit(embedding)
 
     elif clustering_algorithm == 'Agglomerative Hierarchical - single linkage':
