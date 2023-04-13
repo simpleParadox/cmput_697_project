@@ -95,13 +95,21 @@ NOTE: We mean center the embeddings before clustering using sklearn's StandardSc
 ## Clustering Algorithms
 TODO
 ## Results
-TODO
+### KMeans
+![KMeans internal](https://github.com/simpleParadox/cmput_697_project/blob/main/plots/score_plots/k_means_internal_validation_50_iters_fixed_seed.png)
+![KMeans external](https://github.com/simpleParadox/cmput_697_project/blob/main/plots/score_plots/kmeans_external_validation.png)
 
-DBSCAN internal: eps=40.0=> 0.29167095  50.0=0.45513833, 60.0=0.4692
-HDBSCAN internal = -0.0124097 for everything, even for eps=60.0
+### Single linkage Agglomerative Hierarchical
+![single linkage agglomerative internal](https://github.com/simpleParadox/cmput_697_project/blob/main/plots/score_plots/agglomerative_internal_validation.png)
+![single linkage agglomerative external](https://github.com/simpleParadox/cmput_697_project/blob/main/plots/score_plots/agg_external_validation.png)
 
-DBSCAN external: eps=40.0=>5.6732e-03  50.0=2.3222e-03, 60=0.003375
-HDBSCAN external: 006082314232855933 for all eps.
+
+### DBSCAN
+![DBSCAN internal](https://github.com/simpleParadox/cmput_697_project/blob/main/plots/score_plots/dbscan_internal.png)
+
+
+### HDBSCAN
+![HDBSCAN internal](https://github.com/simpleParadox/cmput_697_project/blob/main/plots/score_plots/hdbscan_internal.png)
 
 
 ## Conclusion
