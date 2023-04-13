@@ -118,7 +118,15 @@ def run_clustering(embedding_type, clustering_algorithm, seed, n_clusters, eps, 
 
     # Evaluate the model.
     assert model is not None
-    silhouette = silhouette_score(embedding, model.labels_)
+    # Remove the -1 labels.
+    outliers = np.where(model.labels_ == -1)[0]
+    # Remove the outliers from the data.
+    X = np.delete(embedding, outliers, axis=0)
+    # Remove the outliers from the labels.
+
+    y = np.delete(model.labels_, outliers, axis=0)
+    silhouette = silhouette_score(X, y)
+    print("Silhouette score: ", silhouette)
     ari = adjusted_rand_score(ratings, model.labels_)
 
     return silhouette, ari#, get_df_for_plotting(embedding, ratings, model.labels_)

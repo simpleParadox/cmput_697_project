@@ -85,7 +85,7 @@ agglomerative_external = np.zeros((iterations, len(possible_clusters)))
 # possible_eps = [10.0, 20.0, 30.0, 40.0, 50.0]
 # possible_eps = [0.5, 1.0, 5.0, 10.0, 15.0] # Stop when the number of labels is less than 2. Not using 20.0. but there for compatibility.
 # possible_eps = [15.0]
-possible_eps = [int(args.eps)]
+possible_eps = [args.eps]
 
 possible_min_cluster_size = [int(args.min_cluster_size)]
 dbscan_internal = np.zeros((iterations, len(possible_eps)))
@@ -111,6 +111,7 @@ labels_agglomerative = {}
 for i in range(iterations):
     print("Iteration: ", i)
     clustering_class = args.clustering_algorithm_type
+    print("Clustering algorithm: ", clustering_class)
     # Load the embeddings.
     embed_names = [args.embedding_type] # ["bert_avg"]
     # embed_names = ["bert_embeddings"]
@@ -161,7 +162,7 @@ for i in range(iterations):
 
                 # plot_clusters(embedding_data=embedding, true_labels=ratings, cluster_labels=clustering.alg1.labels_, algorithm=f'K_Means - {embed}_{n_cluster}_clusters', num_clusters=n_cluster)
                 # plot_clusters(embedding_data=embedding, true_labels=ratings, cluster_labels=clustering.alg2.labels_, algorithm=f'K_Means - {embed}_{n_cluster}_clusters', num_clusters=n_cluster)
-        elif clustering_class == 'other':
+        elif clustering_class == 'density':
             # possible_eps = [2, 5, 10, 15, 20]  # Redefining this for the hdbscan.
 
             for eps_i, eps in enumerate(possible_eps):
