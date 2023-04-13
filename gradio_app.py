@@ -3,9 +3,11 @@ import numpy as np
 
 from preprocess import load_data, store_embeddings
 from models import Clustering
+from functions import remove_outliers
 
 # General python data science packages.
 import pandas as pd
+from sklearn import metrics
 import matplotlib.pyplot as plt
 
 import seaborn as sns
@@ -119,26 +121,31 @@ def run_clustering(embedding_type, clustering_algorithm, seed, n_clusters, eps, 
     # Evaluate the model.
     assert model is not None
     # Remove the -1 labels.
-    outliers = np.where(model.labels_ == -1)[0]
+    X, y_pred, y_true = remove_outliers(embedding, model.labels_, ratings)
+    # outliers = np.where(model.labels_ == -1)[0]
     # Remove the outliers from the data.
-    X = np.delete(embedding, outliers, axis=0)
+    # X = np.delete(embedding, outliers, axis=0)
     # Remove the outliers from the labels.
 
-    y = np.delete(model.labels_, outliers, axis=0)
-    silhouette = silhouette_score(X, y)
+    # y = np.delete(model.labels_, outliers, axis=0)
+    silhouette = silhouette_score(X, y_pred)
     print("Silhouette score: ", silhouette)
-    ari = adjusted_rand_score(ratings, model.labels_)
+    ari = adjusted_rand_score(y_true, y_pred)
 
-    return silhouette, ari#, get_df_for_plotting(embedding, ratings, model.labels_)
+    # Calculate purity.
+    contingency_matrix = metrics.cluster.contingency_matrix(y_true, y_pred)
+    purity = np.sum(np.amax(contingency_matrix, axis=0)) / np.sum(contingency_matrix)
+
+    return silhouette, ari, purity#, get_df_for_plotting(embedding, ratings, model.labels_)
 
 
 with gr.Blocks(theme=gr.themes.Soft()) as demo:
     gr.HTML('<h1>Choose Embedding type and Clustering Algorithm</h1>')
     with gr.Row():
         with gr.Column():
-            embedding_type = gr.Radio(['Word2Vec - Average', 'BERT - Average', 'BERT - CLS'], label='Embedding type', info='Choose the embedding type.')
+            embedding_type = gr.Radio(['Word2Vec - Average', 'BERT - Average', 'BERT - CLS'], label='Embedding type', info='Choose the embedding type.', value='BERT - CLS')
         with gr.Column():
-            clustering_algorithm = gr.Radio(['KMeans', 'Agglomerative Hierarchical - single linkage', 'DBSCAN', 'HDBSCAN'], label='Clustering Algorithm', info='Choose the clustering algorithm.')
+            clustering_algorithm = gr.Radio(['KMeans', 'Agglomerative Hierarchical - single linkage', 'DBSCAN', 'HDBSCAN'], label='Clustering Algorithm', info='Choose the clustering algorithm.', value='KMeans')
     gr.HTML('<h1>Choose Hyperparameters</h1>')
     with gr.Row():
         with gr.Column():
@@ -157,13 +164,15 @@ with gr.Blocks(theme=gr.themes.Soft()) as demo:
             silhouette = gr.Textbox(label='Silhouette Score')
         with gr.Column():
             adjusted_rand = gr.Textbox(label='Adjusted Rand Score')
+        with gr.Column():
+            purity = gr.Textbox(label='Purity')
     # gr.HTML('<h1>Visualization in 2D</h1>')
     # with gr.Row():
     #     true_plots = gr.ScatterPlot(x='x', y='y', value=df)
     #     cluster_plots = gr.ScatterPlot(x='x', y='y', value=pd.DataFrame)
 
     btn = gr.Button('Run clustering')
-    btn.click(fn=run_clustering, inputs=[embedding_type, clustering_algorithm, seed, n_clusters, eps, min_samples, min_cluster_size, metric], outputs=[silhouette, adjusted_rand])#, true_plots, cluster_plots])
+    btn.click(fn=run_clustering, inputs=[embedding_type, clustering_algorithm, seed, n_clusters, eps, min_samples, min_cluster_size, metric], outputs=[silhouette, adjusted_rand, purity])#, true_plots, cluster_plots])
 
 
 demo.launch()
