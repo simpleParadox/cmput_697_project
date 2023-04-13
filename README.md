@@ -55,8 +55,40 @@ python gradio_app.py
 ```
 
 
+## To run the code.
+```
+python main.py -h # Gives you the list of command line arguments.
+```
+```
+usage: main.py [-h] --embedding_type EMBEDDING_TYPE --clustering_algorithm_type CLUSTERING_ALGORITHM_TYPE [--seed SEED] [--n_clusters N_CLUSTERS] [--eps EPS] [--min_cluster_size MIN_CLUSTER_SIZE] [--metric METRIC]
+               [--n_ratings N_RATINGS]
+
+Run clustering algorithms on the Amazon reviews dataset.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --embedding_type EMBEDDING_TYPE
+                        The type of embedding to use.
+  --clustering_algorithm_type CLUSTERING_ALGORITHM_TYPE, -alg_type CLUSTERING_ALGORITHM_TYPE
+                        The clustering algorithm to use.
+  --seed SEED           The random seed to use.
+  --n_clusters N_CLUSTERS
+                        The number of clusters to use.
+  --eps EPS             The eps parameter for DBSCAN.
+  --min_cluster_size MIN_CLUSTER_SIZE
+                        The min_cluster_size parameter for HDBSCAN.
+  --metric METRIC       The metric to use for the clustering algorithms.
+  --n_ratings N_RATINGS
+                        The number of ratings to use.
+```
+
+The following example command runs the density based algorithms on the 'bert_avg' embeddings.
+```
+python main.py --embedding_type "bert_avg" --clustering_algorithm_type density
+```
+
 ## Framework
-TODO
+
 ## Embeddings
 
 NOTE: We mean center the embeddings before clustering using sklearn's StandardScaler.
