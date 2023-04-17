@@ -40,6 +40,39 @@ plt.savefig("plots/{}_tsne.png".format(embedding_type))
 
 
 
+# Plotting the purity scores for different clustering algorithms.
+
+# Load the kmeans purity scores.
+
+
+algorithm = 'hdbscan'
+purity_scores_bert_cls = np.load("results/hdbscan_purity_bert_embeddings_3.npz", allow_pickle=True)['arr_0']
+purity_scores_bert_avg = np.load("results/hdbscan_purity_bert_avg_3.npz", allow_pickle=True)['arr_0']
+purity_scores_w2v_avg = np.load("results/hdbscan_purity_w2v_embeddings_3.npz", allow_pickle=True)['arr_0']
+# x_axis_values = np.arange(3, 20, 2)
+# x_axis_values = [0.5, 1.0, 5.0, 10.0, 15.0]
+x_axis_values = [2, 5, 10, 15, 20]
+scores = []
+plt.clf()
+sns.set_style('whitegrid')
+plt.plot(x_axis_values, np.mean(purity_scores_bert_cls, axis=0), label='BERT - CLS', color='red')
+plt.plot(x_axis_values, np.mean(purity_scores_bert_avg, axis=0), label='BERT - Average', color='blue')
+plt.plot(x_axis_values, np.mean(purity_scores_w2v_avg, axis=0), label='Word2Vec - Average', color='green')
+plt.title("Cluster purity scores for {}".format(algorithm), fontsize=14)
+plt.ylabel("Purity score", fontsize=14)
+plt.xlabel("Number of clusters", fontsize=14)
+plt.xticks(x_axis_values)
+plt.legend()
+# plt.show()
+plt.savefig("plots/{}_purity_scores.pdf".format(algorithm))
+
+
+
+
+
+
+
+
 
 
 

@@ -150,7 +150,7 @@ with gr.Blocks(theme=gr.themes.Soft()) as demo:
     with gr.Row():
         with gr.Column():
             seed = gr.Number(value=42, label='Seed (For KMeans)', info='Choose the seed for the clustering algorithm.')
-            n_clusters = gr.Dropdown(['3', '5'], label='Number of clusters (For single linkage hierarchical)', info='Choose the number of clusters.', value='3')
+            n_clusters = gr.Number(label='Number of clusters (For KMeans and single linkage hierarchical)', info='Choose the number of clusters.', value=3)
         with gr.Column():
             with gr.Row():
                 eps = gr.Number(value=0.5, label='Epsilon (For DBSCAN)', info='Choose the epsilon for DBSCAN.')

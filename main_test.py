@@ -42,19 +42,19 @@ def plot_clusters(embedding_data, true_labels, cluster_labels, algorithm='KMeans
 
 # Define command line arguments.
 
-parser = argparse.ArgumentParser(description='Run clustering algorithms on the Amazon reviews dataset.')
-parser.add_argument('--embedding_type', type=str, default='bert_avg', help='Default: bert_avg. Values: bert_avg, bert_embeddings, w2v_embeddings. The type of embedding to use.', required=True)
-parser.add_argument('--clustering_algorithm_type', type=str, default='density', help='Default: density. Values: density/other The type of clustering algorithm to use.', required=True)
-parser.add_argument('--seed', type=int, default=42, help='Default: 42. The random seed to use.', required=False)
-parser.add_argument('--n_clusters', type=int, default=3, help='Default: 3. The number of clusters to use.', required=False)
-parser.add_argument('--eps', type=float, default=0.5, help='Default: 0.5. The eps parameter for DBSCAN.', required=False)
-parser.add_argument('--min_cluster_size', type=int, default=10, help='Default: 10. The min_cluster_size parameter for HDBSCAN.', required=False)
-parser.add_argument('--metric', type=str, default='euclidean', help='Default: euclidean. The metric to use for the clustering algorithms.', required=False)
-parser.add_argument("--n_ratings", type=int, default=5, help="Default: 5. Number of ratings to consider.", required=False)
-args = parser.parse_args()
+# parser = argparse.ArgumentParser(description='Run clustering algorithms on the Amazon reviews dataset.')
+# parser.add_argument('--embedding_type', type=str, default='bert_avg', help='Default: bert_avg. Values: bert_avg, bert_embeddings, w2v_embeddings. The type of embedding to use.', required=True)
+# parser.add_argument('--clustering_algorithm_type', type=str, default='density', help='Default: density. Values: density/other The type of clustering algorithm to use.', required=True)
+# parser.add_argument('--seed', type=int, default=42, help='Default: 42. The random seed to use.', required=False)
+# parser.add_argument('--n_clusters', type=int, default=3, help='Default: 3. The number of clusters to use.', required=False)
+# parser.add_argument('--eps', type=float, default=0.5, help='Default: 0.5. The eps parameter for DBSCAN.', required=False)
+# parser.add_argument('--min_cluster_size', type=int, default=10, help='Default: 10. The min_cluster_size parameter for HDBSCAN.', required=False)
+# parser.add_argument('--metric', type=str, default='euclidean', help='Default: euclidean. The metric to use for the clustering algorithms.', required=False)
+# parser.add_argument("--n_ratings", type=int, default=5, help="Default: 5. Number of ratings to consider.", required=False)
+# args = parser.parse_args()
 
 
-print(type(args.eps))
+# print(type(args.eps))
 
 
 # Load the data
@@ -74,27 +74,33 @@ ratings -= 1 # To be in line with the labels assigned by the clustering algorith
 
 
 iterations = 1
-possible_clusters =  [int(args.n_clusters)]#range(3, 20, 2)
+possible_clusters = range(3, 20, 2)
 k_means_internal = np.zeros((iterations, len(possible_clusters)))
+k_means_purity = np.zeros((iterations, len(possible_clusters)))
 agglomerative_internal = np.zeros((iterations, len(possible_clusters)))
 k_means_external = np.zeros((iterations, len(possible_clusters)))
 agglomerative_external = np.zeros((iterations, len(possible_clusters)))
+agglomerative_purity = np.zeros((iterations, len(possible_clusters)))
 
 # Really low values for values of eps under 10.0. NOTE: a value of 70.0 for DBSCAN leads to only one cluster.
 # Therefore, the minimum requirement is to have at least 2 clusters.
 # possible_eps = [10.0, 20.0, 30.0, 40.0, 50.0]
-# possible_eps = [0.5, 1.0, 5.0, 10.0, 15.0] # Stop when the number of labels is less than 2. Not using 20.0. but there for compatibility.
-# possible_eps = [15.0]
-possible_eps = [args.eps]
+possible_eps = [0.5, 1.0, 5.0, 10.0, 15.0] # Stop when the number of labels is less than 2. Not using 20.0. but there for compatibility.
 
-possible_min_cluster_size = [int(args.min_cluster_size)]
+
+possible_min_cluster_size = [2, 5, 10, 15, 20]
 dbscan_internal = np.zeros((iterations, len(possible_eps)))
 dbscan_external = np.zeros((iterations, len(possible_eps)))
+dbscan_purity = np.zeros((iterations, len(possible_eps)))
 hdbscan_internal = np.zeros((iterations, len(possible_eps)))
 hdbscan_external = np.zeros((iterations, len(possible_eps)))
+hdbscan_purity = np.zeros((iterations, len(possible_eps)))
 
 
-if int(args.n_ratings) == 3:
+
+
+
+if possible_clusters[0] == 3:
     # Relabel the ratings if the number of selected clusters is 3, else leave them unchanged.
     ratings[ratings < 3] = 0
     ratings[ratings == 3] = 1
@@ -110,12 +116,12 @@ labels_agglomerative = {}
 
 for i in range(iterations):
     print("Iteration: ", i)
-    clustering_class = args.clustering_algorithm_type
+    clustering_class = 'density'
     print("Clustering algorithm: ", clustering_class)
     # Load the embeddings.
-    embed_names = [args.embedding_type] # ["bert_avg"]
+    # embed_names = ["bert_avg"]
     # embed_names = ["bert_embeddings"]
-    # embed_names = ["w2v_embeddings"]
+    embed_names = ["w2v_embeddings"]
     for embed in embed_names:
         embedding = np.load(f"embeds/{embed}.npz", allow_pickle=True)['arr_0']
         embedding = embedding[good_indices]
@@ -131,12 +137,12 @@ for i in range(iterations):
             for c_i, n_cluster in enumerate(possible_clusters):
                 print(f"Number of clusters: {n_cluster}")
 
-                clustering = Clustering(n_clusters=n_cluster, eps=None, min_samples=5, metric=args.metric, clustering_class=clustering_class, seed=args.seed)  # The seed is only used for the KMeans algorithm.
+                clustering = Clustering(n_clusters=n_cluster, eps=None, min_samples=5, metric='euclidean', clustering_class=clustering_class, seed=i)  # The seed is only used for the KMeans algorithm.
                 clustering.train(embedding)
 
                 # Do internal validation.
                 print("Internal validation for ", embed)
-                kmeans_score, agglomerative_score = clustering.validate(embedding, None, method='internal')  # NOTE: y (ratings) is not used for internal validation. Used for consistency.
+                kmeans_score, agglomerative_score = clustering.validate(embedding, ratings, method='internal')  # NOTE: y (ratings) is not used for internal validation. Used for consistency.
                 print("Kmeans silhouette score: ", kmeans_score)
                 k_means_internal[i, c_i] = kmeans_score
                 print("Hierarchical silhouette score: ", agglomerative_score)
@@ -162,12 +168,19 @@ for i in range(iterations):
 
                 # plot_clusters(embedding_data=embedding, true_labels=ratings, cluster_labels=clustering.alg1.labels_, algorithm=f'K_Means - {embed}_{n_cluster}_clusters', num_clusters=n_cluster)
                 # plot_clusters(embedding_data=embedding, true_labels=ratings, cluster_labels=clustering.alg2.labels_, algorithm=f'K_Means - {embed}_{n_cluster}_clusters', num_clusters=n_cluster)
+
+                kmeans_score, agglomerative_score = clustering.validate(embedding, ratings, method='purity')  # NOTE: 'embeddings' is not used here, kept for consistency.
+                print("Kmeans purity: ", kmeans_score)
+                k_means_purity[i, c_i] = kmeans_score
+                print("Hierarchical purity: ", agglomerative_score)
+                agglomerative_purity[i, c_i] = agglomerative_score
+
         elif clustering_class == 'density':
-            # possible_eps = [2, 5, 10, 15, 20]  # Redefining this for the hdbscan.
+            possible_eps = [2, 5, 10, 15, 20]  # Redefining this for the hdbscan.
 
             for eps_i, eps in enumerate(possible_eps):
                 print(f"Epsilon value: {eps}")
-                clustering = Clustering(n_clusters=None, eps=eps, min_cluster_size=possible_min_cluster_size[0], min_samples=5, metric=args.metric, clustering_class=clustering_class)
+                clustering = Clustering(n_clusters=None, eps=5, min_cluster_size=eps, min_samples=5, metric='euclidean', clustering_class=clustering_class)
                 clustering.train(embedding)
                 print("Unique cluster labels: ", np.unique(clustering.alg1.labels_))
 
@@ -186,6 +199,14 @@ for i in range(iterations):
 
                 print("HDBSCAN silhouette score: ", hdbscan_score)
                 hdbscan_internal[i, eps_i] = hdbscan_score
+
+                # Do purity score calculation.
+                dbscan_score, hdbscan_score = clustering.validate(embedding, ratings, method='purity')  # NOTE: y (ratings) is not used for internal validation. Used for consistency.
+                print("DBSCAN purity score: ", dbscan_score)
+                dbscan_purity[i, eps_i] = dbscan_score
+
+                print("HDBSCAN purity score: ", hdbscan_score)
+                hdbscan_purity[i, eps_i] = hdbscan_score
 
                 # # Do external validation.
                 # print("External validation for ", embed)
@@ -218,6 +239,10 @@ for i in range(iterations):
 
 results_kmeans = {}
 results_agglomerative = {}
+results_kmeans_purity = {}
+results_agglomerative_purity = {}
+
+
 results_kmeans['k_means_internal'] = k_means_internal
 results_agglomerative['agglomerative_internal'] = agglomerative_internal
 results_kmeans['k_means_external'] = k_means_external
@@ -226,6 +251,7 @@ results_kmeans['k_means_labels'] = labels_kmeans
 results_agglomerative['agglomerative_labels'] = labels_agglomerative
 
 
+np.savez_compressed(f"results/hdbscan_purity_{embed}_{possible_clusters[0]}.npz", np.array(hdbscan_purity))
 # np.savez_compressed(f"results/dbscan_internal_{embed}_{possible_clusters[0]}.npz", np.array(results_dbscan))
 # np.savez_compressed(f"results/dbscan_external_{embed}_{possible_clusters[0]}.npz", dbscan_external)
 # np.savez_compressed(f"results/hdbscan_internal_{embed}_{possible_clusters[0]}.npz", results_hdbscan)
@@ -233,8 +259,8 @@ results_agglomerative['agglomerative_labels'] = labels_agglomerative
 # Calculate the means of the internal and external scores for each algorithm and
 
 # Save the results for the partitioning algorithms.
-# np.savez_compressed(f"results/k_means_external_{embed}_{possible_clusters[0]}_50_iters_fixed_seed.npz", np.array(k_means_external))
-np.savez_compressed(f"results/agglomerative_external_{embed}_{possible_clusters[0]}.npz", np.array(agglomerative_external))
+# np.savez_compressed(f"results/k_means_purity_{embed}_{possible_clusters[0]}_50_iters_fixed_seed.npz", np.array(k_means_purity))
+# np.savez_compressed(f"results/agglomerative_purity_{embed}_{possible_clusters[0]}.npz", np.array(agglomerative_purity))
 
 
 

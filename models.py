@@ -33,10 +33,10 @@ class Clustering:
         :param metric: for the metric used to compute the distances between the pairs of instances.
         """
         self.clustering_class = clustering_class
-        if clustering_class == "partitioning":
+        if clustering_class == "other":
             self.alg1 = KMeans(n_clusters=n_clusters, random_state=seed)
             self.alg2 = AgglomerativeClustering(n_clusters=n_clusters, metric=metric, linkage="single")
-        else:
+        elif clustering_class == "density":
             # The metric is used only for the density based clustering algorithm.
             self.alg1 = DBSCAN(eps=eps, min_samples=min_samples, metric=metric)
             if metric != 'cosine':
