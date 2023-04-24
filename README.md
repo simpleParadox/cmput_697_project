@@ -98,20 +98,21 @@ TODO
 ### KMeans
 ![KMeans internal](https://github.com/simpleParadox/cmput_697_project/blob/main/plots/score_plots/k_means_internal_validation_50_iters_fixed_seed.png)
 ![KMeans external](https://github.com/simpleParadox/cmput_697_project/blob/main/plots/score_plots/kmeans_external_validation.png)
+![KMeans purity](https://github.com/simpleParadox/cmput_697_project/blob/main/plots/k_means_purity_scores.png)
 
 ### Single linkage Agglomerative Hierarchical
 ![single linkage agglomerative internal](https://github.com/simpleParadox/cmput_697_project/blob/main/plots/score_plots/agglomerative_internal_validation.png)
 ![single linkage agglomerative external](https://github.com/simpleParadox/cmput_697_project/blob/main/plots/score_plots/agg_external_validation.png)
 
+![single linkage agglomerative purity](https://github.com/simpleParadox/cmput_697_project/blob/main/plots/agglomerative%20single%20linkage_purity_scores.png)
+
 
 ### DBSCAN
 ![DBSCAN internal](https://github.com/simpleParadox/cmput_697_project/blob/main/plots/score_plots/dbscan_internal.png)
+![DBSCAN purity](https://github.com/simpleParadox/cmput_697_project/blob/main/plots/dbscan_purity_scores.png)
 
 
 ### HDBSCAN
 ![HDBSCAN internal](https://github.com/simpleParadox/cmput_697_project/blob/main/plots/score_plots/hdbscan_internal.png)
-
-
-## Conclusion
-TODO
+![HDBSCAN purity](https://github.com/simpleParadox/cmput_697_project/blob/main/plots/hdbscan_purity_scores.png)
 
