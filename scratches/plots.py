@@ -35,6 +35,7 @@ sns.scatterplot(x='x', y='y', hue='ratings', data=df, palette=sns.color_palette(
 plt.title("TSNE plot of Word2Vec - Average embeddings")
 plt.xlabel("TSNE component 1", fontsize=14)
 plt.ylabel("TSNE component 2", fontsize=14)
+plt.show()
 plt.savefig("plots/{}_tsne.png".format(embedding_type))
 
 
@@ -55,15 +56,19 @@ x_axis_values = [2, 5, 10, 15, 20]
 scores = []
 plt.clf()
 sns.set_style('whitegrid')
+
 plt.plot(x_axis_values, np.mean(purity_scores_bert_cls, axis=0), label='BERT - CLS', color='red')
 plt.plot(x_axis_values, np.mean(purity_scores_bert_avg, axis=0), label='BERT - Average', color='blue')
 plt.plot(x_axis_values, np.mean(purity_scores_w2v_avg, axis=0), label='Word2Vec - Average', color='green')
 plt.title("Cluster purity scores for {}".format(algorithm), fontsize=14)
 plt.ylabel("Purity score", fontsize=14)
-plt.xlabel("Number of clusters", fontsize=14)
-plt.xticks(x_axis_values)
+plt.xlabel("Min Cluster Size", fontsize=14)
+plt.xticks(x_axis_values, rotation=90)
 plt.legend()
+plt.tight_layout()
+
 # plt.show()
+
 plt.savefig("plots/{}_purity_scores.pdf".format(algorithm))
 
 

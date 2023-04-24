@@ -176,11 +176,11 @@ for i in range(iterations):
                 agglomerative_purity[i, c_i] = agglomerative_score
 
         elif clustering_class == 'density':
-            possible_eps = [2, 5, 10, 15, 20]  # Redefining this for the hdbscan.
+            # possible_eps = [2, 5, 10, 15, 20]  # Redefining this for the hdbscan. These are the min_cluster_sizes.
 
             for eps_i, eps in enumerate(possible_eps):
                 print(f"Epsilon value: {eps}")
-                clustering = Clustering(n_clusters=None, eps=5, min_cluster_size=eps, min_samples=5, metric='euclidean', clustering_class=clustering_class)
+                clustering = Clustering(n_clusters=None, eps=15.0, min_cluster_size=10, min_samples=5, metric='euclidean', clustering_class=clustering_class)
                 clustering.train(embedding)
                 print("Unique cluster labels: ", np.unique(clustering.alg1.labels_))
 
